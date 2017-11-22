@@ -1,0 +1,7 @@
+Started|21.11.2017 22:33:12
+21.11.2017 22:33:13|WaitRoomsCreation Thread:System.ArgumentNullException: Значение не может быть неопределенным.
+Имя параметра: source
+   в System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   в RData.TSeg.PosOk(ConnectionT& nC) в D:\1Cергей\Мои программы\проекты\GA\RData.pas:строка 867
+   в RData.RData.GetRandSegment(ConnectionT& C) в D:\1Cергей\Мои программы\проекты\GA\RData.pas:строка 1402
+   в REData.Dangeon.WaitRoomsCreation() в D:\1Cергей\Мои программы\проекты\GA\REData.pas:строка 516
