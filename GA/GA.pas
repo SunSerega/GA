@@ -3,7 +3,7 @@ uses
 
 {$region Bags}{
 
-  ToDo Hall org can pass player thrue walls
+  ToDo Hall org can pass player thru walls
   ToDo Camera jumps on Hall->EntranceT1
   ToDo Fast Играть-Esc-Играть destroys game
   ToDo After Играть press because of lag player moves fast
