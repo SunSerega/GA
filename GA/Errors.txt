@@ -1,4 +1,4 @@
-Started|22.11.2017 11:44:23
+﻿Started|22.11.2017 11:44:23
 22.11.2017 11:44:25|WaitRoomsCreation Thread:System.ArgumentNullException: Значение не может быть неопределенным.
 Имя параметра: source
    в System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
