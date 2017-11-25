@@ -11,7 +11,6 @@ uses GData, System.Drawing, OpenGL;
 const
   ///Еденица ширины комнат и радиус зрения до тумана
   RW = 1500;
-  //RFQ = 32;
   ///Радиус прогрузки лабиринта
   MazeRad: byte = 50 * RW;
   ///Радиус отгрузки лабиринта
@@ -56,10 +55,10 @@ type
   public 
     class Hall := 30;
     class Canal := 3;
-    class TSeg := 9;
+    class TSeg := 45;
+    class Treasury := 100;
     
     //class Corner := 15;
-    class Treasury := 1000;
     class StairTube := 50;
   
   end;
@@ -408,9 +407,9 @@ function Round(HB: HitBoxT): HitBoxT;
 ///просчитывает физику цепи объектов с массой obj прикреплённых к точке ConTo. Не написано.
 function MO2DChain(ConTo: PointF; obj: array of MObject2D): array of MObject2D;
 ///вычисляет находится ли точка pt слева от вектора p1-p2 с данными про него в LD
-function OnLeft(p1,p2,pt:PointF;LD:SLine):boolean;
+function OnLeft(p1, p2, pt: PointF; LD: SLine): boolean;
 ///вычисляет находится ли точка pt слева от вектора p1-p2
-function OnLeft(p1,p2,pt:PointF):boolean;
+function OnLeft(p1, p2, pt: PointF): boolean;
 {$endregion}
 
 {$region arr funcs}
@@ -580,6 +579,13 @@ begin
   Result := Self;
 end;
 
+function Add3rd(Self: array of PointF; Z: Single): array of PPoint; extensionmethod;
+begin
+  Result := new PPoint[Self.Length];
+  for i: integer := 0 to Result.Length - 1 do
+    Result[i] := new PPoint(Self[i].X, Self[i].Y, Z);
+end;
+
 function Mlt(Self: array of PointF; r: real): array of PointF; extensionmethod;
 begin
   for i: integer := 0 to Self.Length - 1 do
@@ -695,25 +701,18 @@ begin
   {}
 end;
 
-function OnLeft(p1,p2,pt:PointF;LD:SLine):boolean;
+function OnLeft(p1, p2, pt: PointF; LD: SLine): boolean;
 begin
   var LD2 := LD;
   LD.BLineData(pt);
-  Result := LD.XYSwaped?((LD.b<LD2.b) xor (p2.Y>p1.Y)):((LD.b>LD2.b) xor (p2.X>p1.X));
+  Result := LD.XYSwaped ? ((LD.b < LD2.b) xor (p2.Y > p1.Y)) : ((LD.b > LD2.b) xor (p2.X > p1.X));
 end;
 
-function OnLeft(p1,p2,pt:PointF):=OnLeft(p1,p2,pt,SLine.LineData(p1,p2));
+function OnLeft(p1, p2, pt: PointF) := OnLeft(p1, p2, pt, SLine.LineData(p1, p2));
 
 {$endregion}
 
 {$region arr funcs}
-
-function Add3rd(a: array of PointF; Z: Single): array of PPoint;
-begin
-  Result := new PPoint[a.Length];
-  for i: integer := 0 to Result.Length - 1 do
-    Result[i] := new PPoint(a[i].X, a[i].Y, Z);
-end;
 
 function PTHB(p: array of PointF): List<HitBoxT>;
 begin

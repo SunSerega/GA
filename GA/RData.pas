@@ -2,9 +2,11 @@ unit RData;
 
 uses CFData, TCData, glObjectData, System.Drawing, REData, EData, GData, OpenGl, PABCSystem, VData;
 
-//                     N                  
-//                   W   E                
-//                     S                  
+//                 -   N                  
+//                     |                  
+//                 W---M---E              
+//                     |                  
+//                     S   +              
 
 type
   ConnectionT = REData.ConnectionT;
@@ -449,7 +451,7 @@ type
     public function CCRarity: real; override := StССRarity.Hall;
     
     public function ClassName: string; override := 'GA.Hall';
-  
+    
   end;
   
   Canal = sealed class(Segment)
@@ -721,22 +723,23 @@ type
     
     private class StMapHB: List<HitBoxT>;
     
-    {$endregion
+    {$endregion}
     
     {$region Draw Objects}
     
     private class MapDrawObj1: glCObject;
     
-    F_Wdo, F_Mdo, F_Edo: glObject;
+    private class F_Wdo, F_Mdo, F_Edo: glObject;
     
-    W_Sdo: List<glObject>;
-    W_WCdo, W_ECdo: array of TPoint;
-    W_WOdo1, W_EOdo1: array of TPoint;
-    W_WOdo2, W_EOdo2: array of TPoint;
+    private class W_Sdo: List<glObject>;
+    private class W_WCdo, W_ECdo: List<glObject>;
+    private class W_WOdo, W_EOdo: List<glObject>;
+    
+    {$endregion}
     
     {$endregion}
     
-    {$endregion}
+    private Wc, Ec: boolean;
     
     private class procedure Init;
     begin
@@ -751,6 +754,7 @@ type
       
       Npts := new PointF[2];
       Npts[0] := new PointF(-Spts[0].X, Spts[0].Y - TL1 - TL2);
+      //Npts[0] := new PointF(-RW/2, Spts[0].Y - TL1 - TL2);
       Npts[1] := new PointF(-Npts[0].X, Npts[0].Y);
       
       
@@ -759,7 +763,7 @@ type
       nP1 := new PointF(-Spts[0].X, Spts[0].Y - TL1);
       nP2 := new PointF(nP1.X - STL * Cos(STA), nP1.Y + STL * Sin(STA));
       dP1 := new PointF(0, STWd2);
-      dP2 := new PointF(TW * Sin(STA), TW * Cos(STA));
+      dP2 := new PointF(TW * Sin(STA) / 2, TW * Cos(STA) / 2);
       
       Wpts1 := new PointF[2];Epts1 := new PointF[2];
       Wpts2 := new PointF[2];Epts2 := new PointF[2];
@@ -768,8 +772,8 @@ type
       Wpts1[0] := nP1 + dP1;
       Wpts1[1] := nP2 + dP2;
       
-      Wpts2[0] := nP1 - dP1;
-      Wpts2[1] := nP2 - dP2;
+      Wpts2[1] := nP1 - dP1;
+      Wpts2[0] := nP2 - dP2;
       
       
       Epts1[0] := new PointF(-Wpts2[1].X, Wpts2[1].Y);
@@ -786,16 +790,39 @@ type
       W_WOhb := new List<HitBoxT>(2);W_EOhb := new List<HitBoxT>(2);
       
       W_WChb.Add(new HitBoxT(Spts[Spts.Length - 1], Npts[0]));
-      W_EChb.Add(new HitBoxT(Spts[0], Npts[1]));
+      W_EChb.Add(new HitBoxT(Npts[1], Spts[0]));
       
-      W_WOhb.Add(new HitBoxT(Wpts1[0], Wpts1[1]));W_WOhb.Add(new HitBoxT(Wpts2[0], Wpts2[1]));
-      W_EOhb.Add(new HitBoxT(Epts1[0], Epts1[1]));W_EOhb.Add(new HitBoxT(Epts2[0], Epts2[1]));
+      W_WOhb.Add(new HitBoxT(Wpts1[0], Wpts1[1])); W_WOhb.Add(new HitBoxT(Wpts2[0], Wpts2[1]));
+      W_EOhb.Add(new HitBoxT(Epts1[0], Epts1[1])); W_EOhb.Add(new HitBoxT(Epts2[0], Epts2[1]));
+      
+      W_WOhb.Add(new HitBoxT(Spts[Spts.Length - 1], Wpts1[0])); W_WOhb.Add(new HitBoxT(Wpts2[1], Npts[0]));
+      W_EOhb.Add(new HitBoxT(Epts2[1], Spts[0] )); W_EOhb.Add(new HitBoxT(Npts[1], Epts1[0]));
       
       
       E_Whb := new HitBoxT(Wpts1[1], Wpts2[0]);
-      E_Ehb := new HitBoxT(Epts2[0], Epts1[1]);
+      E_Ehb := new HitBoxT(Epts1[1], Epts2[0]);
       
       E_Nhb := new HitBoxT(Npts[0], Npts[1]);
+      
+      
+      var MHBP := new PointF[7 + 1];
+      
+      MHBP[3 + 0] := new PointF(0, CW);
+      
+      var k_a := Max(-Tan(APCP), (CW - Wpts1[1].Y) / Wpts1[1].X);
+      MHBP[3 - 1] := new PointF(Wpts2[0].X, CW - Wpts2[0].X * k_a);
+      MHBP[3 + 1] := new PointF(-MHBP[3 - 1].X, MHBP[3 - 1].Y);
+      
+      MHBP[3 - 2] := Wpts2[0];
+      MHBP[3 + 2] := new PointF(-MHBP[3 - 2].X, MHBP[3 - 2].Y);
+      
+      MHBP[3 - 3] := Npts[0];
+      MHBP[3 + 3] := Npts[1];
+      
+      MHBP[7] := MHBP[0];
+      
+      StMapHB := PTHB(MHBP).Mlt(0.99);
+      
       
       
       
@@ -835,22 +862,45 @@ type
       end;
       
       dP1 := nP2 - nP1;
-      var mlt := 4;
+      var mlt := 256;
       TexSize := new Point(Ceil(dP1.X / 4 / mlt) shl 2, Ceil(dP1.Y / 4 / mlt) shl 2);
       
       for var i2: integer := 0 to PA_M.Length - 1 do
       begin
-        PA_M[i2].TX := (PA_M[i2].X - nP1.X) / TexSize.X * mlt;
-        PA_M[i2].TY := (PA_M[i2].Y - nP1.Y) / TexSize.Y * mlt;
+        PA_M[i2].TX := (PA_M[i2].X - nP1.X) / TexSize.X / mlt;
+        PA_M[i2].TY := (PA_M[i2].Y - nP1.Y) / TexSize.Y / mlt;
       end;
       for var i2: integer := 0 to 3 do
       begin
-        PA_W[i2].TX := (PA_W[i2].X - nP1.X) / TexSize.X * mlt;
-        PA_W[i2].TY := (PA_W[i2].Y - nP1.Y) / TexSize.Y * mlt;
-        PA_E[i2].TX := (PA_E[i2].X - nP1.X) / TexSize.X * mlt;
-        PA_E[i2].TY := (PA_E[i2].Y - nP1.Y) / TexSize.Y * mlt;
+        PA_W[i2].TX := (PA_W[i2].X - nP1.X) / TexSize.X / mlt;
+        PA_W[i2].TY := (PA_W[i2].Y - nP1.Y) / TexSize.Y / mlt;
+        PA_E[i2].TX := (PA_E[i2].X - nP1.X) / TexSize.X / mlt;
+        PA_E[i2].TY := (PA_E[i2].Y - nP1.Y) / TexSize.Y / mlt;
       end;
       
+      var Tex := RTG.NextFloor(TexSize.X, TexSize.Y);
+      
+      F_Wdo := new glTObject(GL_QUADS, Tex, PA_W);
+      F_Edo := new glTObject(GL_QUADS, Tex, PA_E);
+      
+      F_Mdo := new glTObject(GL_POLYGON, Tex, PA_M);
+      
+      var w0: real := 0;
+      var w1: real := 0;
+      
+      Tex := RTG.NextWall(128, 128);
+      
+      W_ECdo := HBTDOReverse(w0, w1, Tex, W_EChb);
+      W_EOdo := HBTDOReverse(w0, w1, Tex, W_EOhb);
+      
+      W_Sdo := HBTDO(w0, w1, Tex, W_Shb);w0 := w1;
+      
+      W_WCdo := HBTDOReverse(w0, w1, Tex, W_WChb);
+      W_WOdo := HBTDOReverse(w0, w1, Tex, W_WOhb);
+      
+      
+      
+      MapDrawObj1 := new glCObject(GL_POLYGON,0,0,0,0,new PPoint[0]);
       
     end;
     
@@ -867,21 +917,24 @@ type
       Result := PreInit(Pre, nC.Whose.DangeonIn, nC, (new ConnectionT[](
         new ConnectionT(0, E_Whb, nil, nil),
         new ConnectionT(0, E_Nhb, nil, nil),
-        new ConnectionT(0, E_Ehb, nil, nil))).ToList, StMapHB.ToList.Mlt(0.99));
+        new ConnectionT(0, E_Ehb, nil, nil))).ToList, StMapHB.ToList.Mlt(0.099));//ToDo костыль!
       
     end;
     
     public constructor(var nC: ConnectionT);
     begin
       
-      
+      Wc := true;
+      Ec := true;
       
       Init(Pre, nC, W_Shb + W_EOhb + W_WOhb, 3, 1);
       
-      //DrawObj.Add(new glTObject(GL_QUAD_STRIP, RTG.NextWall(128 * (TW - 2), 128), W_ENpts));
-      //DrawObj.Add(new glTObject(GL_QUAD_STRIP, RTG.NextWall(128 * (TW - 2), 128), W_ESpts));
-      //DrawObj.Add(new glTObject(GL_QUAD_STRIP, RTG.NextWall(128 * (TW - 2), 128), W_WSpts));
-      //DrawObj.Add(new glTObject(GL_QUAD_STRIP, RTG.NextWall(128 * (TW - 2), 128), W_WNpts));
+      Connections[0].lbl := byte(0);
+      Connections[1].lbl := byte(1);
+      Connections[2].lbl := byte(2);
+      
+      DrawObj := W_WOdo + W_Sdo + W_EOdo;
+      
       DrawObj.Add(F_Wdo);
       DrawObj.Add(F_Mdo);
       DrawObj.Add(F_Edo);
@@ -891,217 +944,172 @@ type
     end;
     
     
+    public procedure CloseWay(C: ConnectionT); override;
+    begin
+      if Connections.Remove(C) then
+      begin
+        case byte(C.lbl) of
+          1:
+            begin
+              var HB := Rotate(C.HB - new PointF(X, Y), -rot);
+              DrawObj.Add(new glTObject(GL_QUADS, WPWTex, new TPoint[](
+                new TPoint(HB.p1.X, HB.p1.Y, (C.Z - Z - 1) * RW, 0, 0),
+                new TPoint(HB.p2.X, HB.p2.Y, (C.Z - Z - 1) * RW, 1, 0),
+                new TPoint(HB.p2.X, HB.p2.Y, (C.Z - Z - 0) * RW, 1, 1),
+                new TPoint(HB.p1.X, HB.p1.Y, (C.Z - Z - 0) * RW, 0, 1))));
+              WallHitBox.Add(C.HB - new PointF(X, Y));
+            end;
+          0:
+            begin
+              Wc := false;
+              DrawObj.Remove(F_Wdo);
+              foreach var o in W_WOdo do DrawObj.Remove(o);
+              foreach var o in W_WCdo do DrawObj.Add(o);
+              WallHitBox := (W_Shb + (Ec ? W_EOhb : W_EChb) + W_WChb).Rotate(rot);
+            end;
+          2:
+            begin
+              Ec := false;
+              DrawObj.Remove(F_Edo);
+              foreach var o in W_EOdo do DrawObj.Remove(o);
+              foreach var o in W_ECdo do DrawObj.Add(o);
+              WallHitBox := (W_Shb + W_EChb + (Wc ? W_WOhb : W_WChb)).Rotate(rot);
+            end;
+        end;
+      end else
+        raise new System.ArgumentException('No such connection of this room');
+    end;
+    
     public function CCRarity: real; override := StССRarity.TSeg;
     
     public function ClassName: string; override := 'GA.TSeg';
   
   end;
-
+  
+  Treasury = sealed class(Segment)
+  
+    {$region Static Data}
+    
+    private class TW:=5*RW;//ToDo костыль! class->const
+    
+    private class Pre: SegmentPreData;
+    
+    private class pts: array of PointF;
+    
+    private class w:real;
+    private class WTex:Texture;
+    
+    {$region Hitboxes}
+    
+    private class E_Shb:HitBoxT;
+    
+    private class W_Nhb:List<HitBoxT>;
+    
+    private class StMapHB:List<HitBoxT>;
+    
+    {$endregion}
+    
+    {$region Draw Objects}
+    
+    private class StDrawObjs:List<glObject>;
+    
+    private class MapDrawObj1:glCObject;
+    
+    {$endregion}
+    
+    {$endregion}
+    
+    private class procedure Init;
+    begin
+      
+      pts := new PointF[4];
+      pts[0] := new PointF(-TW/2,0);
+      pts[1] := new PointF(-TW/2,-TW);
+      pts[2] := new PointF(+TW/2,-TW);
+      pts[3] := new PointF(+TW/2,0);
+      
+      
+      W_Nhb := PTHB(pts);
+      StMapHB := W_Nhb.ToList;
+      StMapHB.Capacity := 4;
+      StMapHB.Add(new HitBoxT(pts[3],pts[0]));
+      
+      
+      var w:real;
+      WTex := RTG.NextWall(128,128);
+      StDrawObjs := HBTDO(0,w,WTex,W_Nhb);
+      StDrawObjs.Capacity := 4;
+      StDrawObjs.Add(new glTObject(GL_QUADS,RTG.NextFloor(128,128),pts.ConvertAll(p->new TPoint(p.X,p.Y,0,(p.X-pts[0].X)/TW,(p.Y-pts[0].Y)/TW))));
+      
+      MapDrawObj1 := new glCObject(GL_QUADS,1,215/255,0,1,pts.Add3rd(0));//exit.w=TW?!
+      
+    end;
+    
+    
+    public class function Rarity := StRarity.Treasury;
+    
+    public class function RarityOk := Random * Rarity < 1;
+    
+    public class function PosOk(var nC: ConnectionT): boolean;
+    begin
+      
+      w := nC.HB.w/2;
+      E_Shb := new HitBoxT(new PointF(+w,0),new PointF(-w,0));
+      Pre.ZMin := 0;
+      Pre.ZMax := 0;
+      Result := PreInit(Pre, nC.Whose.DangeonIn, nC, Lst(
+        new ConnectionT(0, E_Shb, nil, nil)), 0, StMapHB.ToList.Mlt(0.99));
+      
+    end;
+    
+    public constructor(var nC: ConnectionT);
+    begin
+      
+      var W_hb := W_Nhb.ToList;
+      W_hb.Capacity := 5;
+      W_hb.Add(new HitBoxT(pts[3],new PointF(+w,0)));
+      W_hb.Add(new HitBoxT(new PointF(-w,0),pts[0]));
+      Init(Pre, nC, W_hb, 3, 1);
+      
+      DrawObj := StDrawObjs.ToList;
+      DrawObj.Capacity := 5;
+      DrawObj.Add(new glTObject(Rotate(W_hb[3],-rot),WTex));
+      DrawObj.Add(new glTObject(Rotate(W_hb[4],-rot),WTex));
+      
+      MapDrawObj.Add(MapDrawObj1);
+      
+    end;
+    
+    
+    public procedure CloseWay(C: ConnectionT); override;
+    begin
+      if Connections.Remove(C) then
+        raise new System.ArgumentException('Этого не должно было случиться...') else
+        raise new System.ArgumentException('No such connection of this room');
+    end;
+    
+    public function CCRarity: real; override := StССRarity.Treasury;
+    
+    public function ClassName: string; override := 'GA.Treasury';
+    
+  end;
+  
+  StairTube = sealed abstract class(Segment)
+    
+  end;
+  
+  SegForgotWhat = sealed abstract class(Segment)
+    
+  end;
+  
+  
+  SegVoid = sealed abstract class(Segment)
+    
+  end;
+  
   {$endregion}
 
 {$region was before}{
-  TSeg = sealed class(Segment)
-    Rot: byte;
-
-    U, D, M: array of PointF;
-
-    class ConU := Mlt(new PointF[3](new PointF(-0.500, -0.050), new PointF(-0.250, -0.050), new PointF(-0.050, -0.500)), RW);
-    class ConD := Mlt(new PointF[3](new PointF(-0.050, +0.500), new PointF(-0.250, +0.050), new PointF(-0.500, +0.050)), RW);
-
-    class Mid := Mlt(new PointF[21](
-    new PointF(+0.050, -0.500), new PointF(-0.050, -0.050),
-    new PointF(+0.004, -0.050),
-    new PointF(+0.018, -0.095), new PointF(+0.073, -0.176), new PointF(+0.153, -0.231),
-    new PointF(+0.250, -0.250),
-    new PointF(+0.346, -0.231), new PointF(+0.426, -0.176), new PointF(+0.481, -0.095),
-    new PointF(+0.500, +0.000),
-    new PointF(+0.481, +0.096), new PointF(+0.426, +0.176), new PointF(+0.346, +0.231),
-    new PointF(+0.250, +0.250),
-    new PointF(+0.153, +0.231), new PointF(+0.073, +0.176), new PointF(+0.018, +0.096),
-    new PointF(+0.004, +0.050),
-    new PointF(-0.050, +0.050), new PointF(+0.050, +0.500)), RW);
-
-    class function Fit(State: StateT; X, Y, Z: integer): boolean;
-    begin
-      var L := State.L;
-      var R := State.R;
-      var N := State.N;
-      var S := State.S;
-      var U := State.U;
-      var D := State.D;
-
-      Result :=
-      ((R < 2) and (S > 0) and (L > 0) and (N > 0)) or
-      ((S < 2) and (L > 0) and (N > 0) and (R > 0)) or
-      ((L < 2) and (N > 0) and (R > 0) and (S > 0)) or
-      ((N < 2) and (R > 0) and (S > 0) and (L > 0));
-      Result := Result and (U < 2) and (D < 2);
-    end;
-
-    constructor create(State: StateT; X, Y, Z: integer);
-    var
-      nR, nS, nL, nN: boolean;
-    begin
-      Entitys := new Entity[0];
-
-      begin
-        var L := State.L;var R := State.R;var N := State.N;var S := State.S;
-        nR := ((R < 2) and (S > 0) and (L > 0) and (N > 0));
-        nS := ((S < 2) and (L > 0) and (N > 0) and (R > 0));
-        nL := ((L < 2) and (N > 0) and (R > 0) and (S > 0));
-        nN := ((N < 2) and (R > 0) and (S > 0) and (L > 0));
-      end;
-
-      if not (nR or nS or nL or nN) then raise new System.Exception('не удалось поместить комнату');
-
-      while true do
-      begin
-        Rot := Random(4);
-        var Fit := false;
-        case Rot of
-          0: Fit := nR;
-          1: Fit := nS;
-          2: Fit := nL;
-          3: Fit := nN;
-        end;
-        if Fit then break;
-      end;
-
-      case Rot of
-        0: self.State := new StateT(2, 0, 2, 2, 0, 0);//10 00 10 10
-        1: self.State := new StateT(2, 2, 2, 0, 0, 0);//10 10 10 00
-        2: self.State := new StateT(0, 2, 2, 2, 0, 0);//00 10 10 10
-        3: self.State := new StateT(2, 2, 0, 2, 0, 0);//10 10 00 10
-      end;
-
-      self.X := X;
-      self.Y := Y;
-      self.Z := Z;
-
-      if (X <> 0) or (Y <> 0) then
-      begin
-        var Sent := Rotate(0.25, 0, Pi / 2 * Rot);
-        //Sent.X += 0.5;Sent.Y += 0.5;
-        Sent.X *= RW;Sent.Y *= RW;
-        while Random * 20 > 1 do
-        begin
-          var ang := Random * Pi * 2;
-          var r := Random * RW / 4 * 0.9;
-          Entitys := Entitys + new Entity[1](new Slime(10 + Random * 30, new PointF(Sent.X + r * Cos(ang), Sent.Y + r * Sin(ang)), self));
-        end;
-      end;
-
-      U := Copy(ConU);
-      D := Copy(ConD);
-      M := Copy(Mid);
-      if Rot > 0 then
-      begin
-        Rotate(U, Pi / 2 * Rot);
-        Rotate(D, Pi / 2 * Rot);
-        Rotate(M, Pi / 2 * Rot);
-      end;
-
-      HB := PTHB(U) + PTHB(D) + PTHB(M);
-
-      TexS := STP.GetParts(HB);
-      TexF := Texture.Standart;
-    end;
-
-    function HitBox(Way: byte; steps: integer): array of array of PointF; override;
-    begin
-      PlayerSeen := true;
-
-      var SR := S1(self);
-      var SS := S2(self);
-      var SL := S3(self);
-      var SN := S4(self);
-
-      Result := CopyHB(HB +
-      ((Way <> 1) and (Rot <> 0) and (SR <> nil) and (steps > 0) ? Add(SR.HitBox(3, steps - 1), +RW, +00) : aPF0) +
-      ((Way <> 2) and (Rot <> 1) and (SS <> nil) and (steps > 0) ? Add(SS.HitBox(4, steps - 1), +00, +RW) : aPF0) +
-      ((Way <> 3) and (Rot <> 2) and (SL <> nil) and (steps > 0) ? Add(SL.HitBox(1, steps - 1), -RW, -00) : aPF0) +
-      ((Way <> 4) and (Rot <> 3) and (SN <> nil) and (steps > 0) ? Add(SN.HitBox(2, steps - 1), -00, -RW) : aPF0));
-
-      EntToProc += Entitys;
-      SegToDraw += new Segment[1](self);
-    end;
-
-  end;
-  Treasury = sealed class(Segment)
-    Rot: byte;
-
-    UR: array of PointF;
-
-    class Room := Mlt(new PointF[6](new PointF(+0.500, +0.050), new PointF(+0.500, +0.500), new PointF(-0.500, +0.500), new PointF(-0.500, -0.500), new PointF(+0.500, -0.500), new PointF(+0.500, -0.050)), RW);
-
-    class function Fit(State: StateT; X, Y, Z: integer): boolean;
-    begin
-      var L := State.L;
-      var R := State.R;
-      var N := State.N;
-      var S := State.S;
-      var U := State.U;
-      var D := State.D;
-
-      Result := (L + R + N + S = 2) and ((L = 1 ? 1 : 0) + (R = 1 ? 1 : 0) + (N = 1 ? 1 : 0) + (S = 1 ? 1 : 0) = 0) and (U < 2) and (D < 2);
-    end;
-
-    constructor create(State: StateT; X, Y, Z: integer);
-    begin
-      Entitys := new Entity[0];
-
-      var L := State.L > 0;var R := State.R > 0;var N := State.N > 0;var S := State.S > 0;
-
-      while true do
-      begin
-        var Fit := false;
-        Rot := Random(4);
-        case Rot of
-          0: Fit := R;
-          1: Fit := S;
-          2: Fit := L;
-          3: Fit := N;
-        end;
-        if Fit then break;
-      end;
-
-      self.State := new StateT(Rot = 2, Rot = 0, Rot = 3, Rot = 1, false, false);
-      self.X := X;
-      self.Y := Y;
-      self.Z := Z;
-
-
-      UR := Copy(Room);
-      if Rot > 0 then
-        Rotate(UR, Pi / 2 * Rot);
-
-      HB := PTHB(UR);
-
-      TexS := STP.GetParts(HB);
-      TexF := Texture.Standart;
-    end;
-
-    function HitBox(Way: byte; steps: integer): array of array of PointF; override;
-    begin
-      PlayerSeen := true;
-
-      var nS1 := S1(self);
-      var nS2 := S2(self);
-      var nS3 := S3(self);
-      var nS4 := S4(self);
-
-      case Rot of
-        0: Result := CopyHB(HB + ((Way <> 1) and (nS1 <> nil) and (steps > 0) ? Add(nS1.HitBox(3, steps - 1), +RW, +00) : aPF0));
-        1: Result := CopyHB(HB + ((Way <> 2) and (nS2 <> nil) and (steps > 0) ? Add(nS2.HitBox(4, steps - 1), +00, +RW) : aPF0));
-        2: Result := CopyHB(HB + ((Way <> 2) and (nS3 <> nil) and (steps > 0) ? Add(nS3.HitBox(1, steps - 1), -RW, -00) : aPF0));
-        3: Result := CopyHB(HB + ((Way <> 3) and (nS4 <> nil) and (steps > 0) ? Add(nS4.HitBox(2, steps - 1), -00, -RW) : aPF0));
-      end;
-
-      EntToProc := EntToProc + Entitys;
-      SegToDraw += new Segment[1](self);
-    end;
-
-  end;
   Staircase = sealed class(Segment)
     SSD: byte;
 
@@ -1400,15 +1408,17 @@ begin
   var HallPosOk := Hall.PosOk(C);if HallPosOk then someOk := true;
   var CanalPosOk := Canal.PosOk(C);if CanalPosOk then someOk := true;
   var TSegPosOk := TSeg.PosOk(C);if TSegPosOk then someOk := true;
+  var TreasuryPosOk := Treasury.PosOk(C);if TreasuryPosOk then someOk := true;
   
   if someOk then
     loop RoomGetAttempts do
     begin
-      case Random(3) of
+      case Random(4) of
         
-        0: if HallPosOk then if Hall.RarityOk then Result := new Hall(C);
-        1: if CanalPosOk then if Canal.RarityOk then Result := new Canal(C);
-        2: if TSegPosOk then if TSeg.RarityOk then Result := new TSeg(C);
+        0: if HallPosOk then     if Hall.RarityOk then     Result := new Hall(C);
+        1: if CanalPosOk then    if Canal.RarityOk then    Result := new Canal(C);
+        2: if TSegPosOk then     if TSeg.RarityOk then     Result := new TSeg(C);
+        3: if TreasuryPosOk then if Treasury.RarityOk then Result := new Treasury(C);
       
       end;
       //if Result <> nil then while (GetKeyState(17) shr 7 = 1) and (GetKeyState(13) shr 7 = 1) do Sleep(10);
@@ -1422,6 +1432,7 @@ end;
 begin
   
   TSeg.Init;
+  Treasury.Init;
   
   Dangeon.GetNewEntrance := GetNewEntrance;
   Dangeon.GetRandSegment := GetRandSegment;

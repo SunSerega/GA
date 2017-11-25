@@ -32,6 +32,24 @@ type
       self.Tex := Tex;
       self.pts := pts;
     end;
+    
+    public constructor create(HB: HitBoxT; Tex: Texture; TX, TY, TW, TH: Single; h: integer);
+    begin
+      self.mode := GL_QUADS;
+      self.Tex := Tex;
+      self.pts := new TPoint[4](
+        new TPoint(HB.p1.X, HB.p1.Y, 0 * h, TX + 0 * TW, TY + 0 * TH),
+        new TPoint(HB.p2.X, HB.p2.Y, 0 * h, TX + 1 * TW, TY + 0 * TH),
+        new TPoint(HB.p2.X, HB.p2.Y, 1 * h, TX + 1 * TW, TY + 1 * TH),
+        new TPoint(HB.p1.X, HB.p1.Y, 1 * h, TX + 0 * TW, TY + 1 * TH));
+    end;
+    
+    public constructor create(HB: HitBoxT; Tex: Texture; TX, TY, TW, TH: Single);begin create(HB, Tex, TX, TY, TW, TH, -WallHeigth); end;//ToDo костыль!
+    
+    public constructor create(HB: HitBoxT; Tex: Texture; h: integer);begin create(HB, Tex, 0, 0, HB.w / h, 1, h); end;//ToDo костыль!
+    
+    public constructor create(HB: HitBoxT; Tex: Texture);begin create(HB, Tex, 0, 0, -HB.w / WallHeigth, 1, -WallHeigth); end;//ToDo костыль!
+  
   end;
   glPObject = record(glObject)
   
@@ -185,7 +203,12 @@ type
 
     {$endregion}
 
-  end;
+end;
+
+///Создаёт стенки комнат из хитбоксов
+function HBTDO(w0: real; var w1: real; Tex: Texture; HBs: List<HitBoxT>): List<glObject>;
+///Создаёт стенки комнат из хитбоксов
+function HBTDOReverse(w0: real; var w1: real; Tex: Texture; HBs: List<HitBoxT>): List<glObject>;
 
 implementation
 
@@ -227,5 +250,46 @@ begin
 end;
 
 procedure glOObject.Draw := foreach var obj1 in obj do obj1.Draw;
+
+function HBTDO(w0: real; var w1: real; Tex: Texture; HBs: List<HitBoxT>): List<glObject>;
+begin
+  
+  Result := new List<glObject>(HBs.Count);
+  
+  w1 := w0 + HBs[0].w;
+  
+  foreach var HB in HBs.Reverse do
+  begin
+    Result.Add(new glTObject(GL_QUADS, Tex, new TPoint[4](
+            new TPoint(HB.p1.X, HB.p1.Y, -1 * WallHeigth, w0 / WallHeigth, 1),
+            new TPoint(HB.p2.X, HB.p2.Y, -1 * WallHeigth, w1 / WallHeigth, 1),
+            new TPoint(HB.p2.X, HB.p2.Y, -0 * WallHeigth, w1 / WallHeigth, 0),
+            new TPoint(HB.p1.X, HB.p1.Y, -0 * WallHeigth, w0 / WallHeigth, 0))));
+    w0 := w1;
+    w1 += HB.w;
+  end;
+  
+end;
+
+function HBTDOReverse(w0: real; var w1: real; Tex: Texture; HBs: List<HitBoxT>): List<glObject>;
+begin
+  
+  HBs := HBs.Reverse.ToList;//ToDo Костыль!
+  Result := new List<glObject>(HBs.Count);
+  
+  w1 := w0 - HBs[0].w;
+  
+  foreach var HB in HBs.Reverse do
+  begin
+    Result.Add(new glTObject(GL_QUADS, Tex, new TPoint[4](
+            new TPoint(HB.p1.X, HB.p1.Y, -1 * WallHeigth, w1 / WallHeigth, 1),
+            new TPoint(HB.p2.X, HB.p2.Y, -1 * WallHeigth, w0 / WallHeigth, 1),
+            new TPoint(HB.p2.X, HB.p2.Y, -0 * WallHeigth, w0 / WallHeigth, 0),
+            new TPoint(HB.p1.X, HB.p1.Y, -0 * WallHeigth, w1 / WallHeigth, 0))));
+    w0 := w1;
+    w1 -= HB.w;
+  end;
+  
+end;
 
 end.

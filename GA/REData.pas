@@ -34,7 +34,7 @@ type
     
     public function rot := HB.rot;
     
-    public function Empty: boolean := not (ConTo is Segment) ;
+    public function Empty := not (ConTo is Segment);
     
     function Senter := HB.Senter;
     
@@ -113,7 +113,7 @@ type
     
     public function GetH(pX, pY: Single): Single; virtual := 0;
     
-    public function GetAllHB := WallHitBox + Connections.Where(C -> C.ConTo = nil).ToArray.ConvertAll(C -> C.HB).ToList;
+    public function GetAllHB := WallHitBox + Connections.Where(C -> C.Empty).ToList.ConvertAll(C -> C.HB-new PointF(X,Y));
     
     public function RoomWait: List<ConnectionT>;
     
@@ -200,12 +200,12 @@ type
     begin
       if Connections.Remove(C) then
       begin
-        var HB := Rotate(C.HB, -rot);
+        var HB := Rotate(C.HB - new PointF(X, Y), -rot);
         DrawObj.Add(new glTObject(GL_QUADS, WPWTex, new TPoint[](
-          new TPoint(HB.p1.X - X, HB.p1.Y - Y, (C.Z - Z - 1) * RW, 0, 0),
-          new TPoint(HB.p2.X - X, HB.p2.Y - Y, (C.Z - Z - 1) * RW, 1, 0),
-          new TPoint(HB.p2.X - X, HB.p2.Y - Y, (C.Z - Z - 0) * RW, 1, 1),
-          new TPoint(HB.p1.X - X, HB.p1.Y - Y, (C.Z - Z - 0) * RW, 0, 1))));
+          new TPoint(HB.p1.X, HB.p1.Y, (C.Z - Z - 1) * RW, 0, 0),
+          new TPoint(HB.p2.X, HB.p2.Y, (C.Z - Z - 1) * RW, 1, 0),
+          new TPoint(HB.p2.X, HB.p2.Y, (C.Z - Z - 0) * RW, 1, 1),
+          new TPoint(HB.p1.X, HB.p1.Y, (C.Z - Z - 0) * RW, 0, 1))));
         WallHitBox.Add(C.HB - new PointF(X, Y));
       end else
         raise new System.ArgumentException('No such connection of this room');
@@ -300,6 +300,7 @@ type
       end;
       
       Pre.ConN := Random(Conns.Count);
+      //if Result then
       while CF.w <> Conns[Pre.ConN].w do
         Pre.ConN := Random(Conns.Count);
       
@@ -511,10 +512,15 @@ type
           
           RoomWait.Remove(C);
           
-          if C.ConTo <> nil then continue;
+          if not C.Empty then continue;
           
           if (Random < Power(sqrt(sqr(C.Whose.X) + sqr(C.Whose.Y) + sqr((C.Whose.Z) * VRmlt)) / MaxR, 10)) or (GetRandSegment(C) = nil) then
+          begin
+            Log(C.ConTo=nil?'nil':C.ConTo.ToString);
+            Log(C.Empty);
+            Log('-'*50);
             C.Whose.CloseWay(C);
+          end;
         
           //System.GC.Collect(System.GC.MaxGeneration, System.GCCollectionMode.Optimized);
         

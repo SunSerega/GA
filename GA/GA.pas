@@ -1,16 +1,6 @@
 uses
   VData, RData, EData, CFData, System.Drawing, GData, glObjectData, OpenGL, CData;
 
-{$region Bags}{
-
-  ToDo Hall org can pass player thru walls
-  ToDo Camera jumps on Hall->EntranceT1
-  ToDo Fast Играть-Esc-Играть destroys game
-  ToDo After Играть press because of lag player moves fast
-  ToDo соединение рядом стоящих комнат сломано
-
-{$endregion}
-
 {$region ToDo}{
 
   TODO перенести старые комнаты
@@ -22,11 +12,16 @@ uses
   ToDo перенести функции и типы из GData в CFData
   ToDo CFData.ArrFuncs->extensionmethod
   ToDo переделать RData.Canal.GetH
+  ToDo TSeg
+   -MapDrawObj
+   -MapHitBox
 
   ToDo костыли
    -TCData.RTG-#529
    -CFData [$savepcu false]
    -RData.TSeg-#566
+   -glObjectData.HBTDOReverse-#568
+   -glObjectData.glTObject.create-#575
 
   ToDo Textures
    -NORMAL text textures
@@ -639,7 +634,7 @@ begin
       if t > System.TimeSpan.Zero then
         System.Threading.Thread.Sleep(t);
       LT := LT.AddMilliseconds(tw);
-    
+      
     except
       on e: System.Exception do
         SaveError('CameraMovementThread: ', e);
