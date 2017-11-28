@@ -18,6 +18,9 @@ uses
    -Hall
    -Canal
   
+  ToDo Canal
+   -Пол кривой...
+  
   ToDo TSeg
    -MapDrawObj
    -MapHitBox

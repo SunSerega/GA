@@ -1,9 +1,8 @@
-begin
+﻿begin
   
   {$region r1}
   
-  loop ReadLnInteger do
-  //���
+  //бла бла бла
   
   {$endregion}
   
