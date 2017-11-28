@@ -1,4 +1,4 @@
-unit VData;
+﻿unit VData;
 
 uses REData, glObjectData, CFData, System.Drawing, GData;
 

@@ -1,4 +1,4 @@
-{$reference 'System.Drawing.dll'}
+п»ї{$reference 'System.Drawing.dll'}
 
 procedure ConvertBMtSI(f, im: string; alpha: boolean := true; wte: boolean := true);
 begin
@@ -22,7 +22,7 @@ end;
 
 begin
   
-  ConvertBMtSI('стена забитая досками.bmp', 'WPW.im', false);
+  ConvertBMtSI('СЃС‚РµРЅР° Р·Р°Р±РёС‚Р°СЏ РґРѕСЃРєР°РјРё.bmp', 'WPW.im', false);
   ConvertBMtSI('WallTexPart.bmp', 'WallTexPart.im', false);
   
   {

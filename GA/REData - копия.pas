@@ -1,4 +1,4 @@
-unit REData;
+п»їunit REData;
 
 uses GData, glObjectData, CFData, TCData, System.Drawing, OpenGL;
 
@@ -443,11 +443,11 @@ type
       while true do
         try
           System.Console.Clear;
-          writeln('Комнат сгенерировано:                ', Rooms.Count);
-          writeln('Комнат ожидает генерации:            ', RoomWait.Count);
-          writeln('Глубина погружения:                  ', PlayerRoom.Z);
-          writeln('Глубина сгенерированого подземелья:  ', Segment.MaxZGen);
-          writeln('Примерная максимальная глубина:      ', MaxR / VRmlt);
+          writeln('РљРѕРјРЅР°С‚ СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРѕ:                ', Rooms.Count);
+          writeln('РљРѕРјРЅР°С‚ РѕР¶РёРґР°РµС‚ РіРµРЅРµСЂР°С†РёРё:            ', RoomWait.Count);
+          writeln('Р“Р»СѓР±РёРЅР° РїРѕРіСЂСѓР¶РµРЅРёСЏ:                  ', PlayerRoom.Z);
+          writeln('Р“Р»СѓР±РёРЅР° СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРѕРіРѕ РїРѕРґР·РµРјРµР»СЊСЏ:  ', Segment.MaxZGen);
+          writeln('РџСЂРёРјРµСЂРЅР°СЏ РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ РіР»СѓР±РёРЅР°:      ', MaxR / VRmlt);
           if RoomWait.Count = 0 then begin Sleep(100); continue; end;
           var C := RoomWait[0];
           var ForceCreation := false;

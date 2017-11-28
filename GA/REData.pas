@@ -1,4 +1,4 @@
-unit REData;
+Ôªøunit REData;
 
 uses GData, glObjectData, CFData, TCData, System.Drawing, OpenGL;
 
@@ -127,7 +127,7 @@ type
     
     );
     
-    class St——Rarity := Dict(
+    class St–°–°Rarity := Dict(
   
     ('GA.EntranceT1', (0.0,  true)),  
     ('GA.Hall', (1.5, false)),
@@ -262,9 +262,9 @@ type
     
     public procedure CloseWay(C: ConnectionT); virtual := StCloseWay(C);
     
-    public function CCRarity: real; virtual := St——Rarity[ClassName].Item1;
+    public function CCRarity: real; virtual := St–°–°Rarity[ClassName].Item1;
     
-    public function ForceConnecting; virtual := St——Rarity[ClassName].Item2;
+    public function ForceConnecting; virtual := St–°–°Rarity[ClassName].Item2;
     
     protected function StWantConnect(T: Segment) := self.ForceConnecting or T.ForceConnecting or ((Random * self.CCRarity < 1) and (Random * T.CCRarity < 1));
     
@@ -494,11 +494,11 @@ type
           var PlayerRoom := nCamera.PlayerRoom;
           {
           System.Console.Clear;
-          writeln(' ÓÏÌ‡Ú Ò„ÂÌÂËÓ‚‡ÌÓ:                ', Rooms.Count);
-          writeln(' ÓÏÌ‡Ú ÓÊË‰‡ÂÚ „ÂÌÂ‡ˆËË:            ', RoomWait.Count);
-          writeln('√ÎÛ·ËÌ‡ ÔÓ„ÛÊÂÌËˇ:                  ', PlayerRoom.Z);
-          writeln('√ÎÛ·ËÌ‡ Ò„ÂÌÂËÓ‚‡ÌÓ„Ó ÔÓ‰ÁÂÏÂÎ¸ˇ:  ', Segment.MaxZGen);
-          writeln('œËÏÂÌ‡ˇ Ï‡ÍÒËÏ‡Î¸Ì‡ˇ „ÎÛ·ËÌ‡:      ', MaxR / VRmlt);
+          writeln('–ö–æ–º–Ω–∞—Ç —Å–≥–µ–Ω–µ—Ä–∏—Ä–æ–≤–∞–Ω–æ:                ', Rooms.Count);
+          writeln('–ö–æ–º–Ω–∞—Ç –æ–∂–∏–¥–∞–µ—Ç –≥–µ–Ω–µ—Ä–∞—Ü–∏–∏:            ', RoomWait.Count);
+          writeln('–ì–ª—É–±–∏–Ω–∞ –ø–æ–≥—Ä—É–∂–µ–Ω–∏—è:                  ', PlayerRoom.Z);
+          writeln('–ì–ª—É–±–∏–Ω–∞ —Å–≥–µ–Ω–µ—Ä–∏—Ä–æ–≤–∞–Ω–æ–≥–æ –ø–æ–¥–∑–µ–º–µ–ª—å—è:  ', Segment.MaxZGen);
+          writeln('–ü—Ä–∏–º–µ—Ä–Ω–∞—è –º–∞–∫—Å–∏–º–∞–ª—å–Ω–∞—è –≥–ª—É–±–∏–Ω–∞:      ', MaxR / VRmlt);
           {}
           if RoomWait.Count = 0 then begin Sleep(100); continue; end;
           var C := RoomWait[0];
@@ -541,7 +541,7 @@ type
             if not ForceCreation then
             begin
               var maxl: real := 0;
-              var mindZ := smallint.MaxValue;
+              //var mindZ := smallint.MaxValue;
               loop 3 do
               begin
                 var nC := RoomWait.Rand;

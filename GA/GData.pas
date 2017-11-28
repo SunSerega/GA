@@ -1,4 +1,4 @@
-{$reference System.Windows.Forms.dll}
+﻿{$reference System.Windows.Forms.dll}
 {$reference System.Drawing.dll}
 
 {apptype windows}

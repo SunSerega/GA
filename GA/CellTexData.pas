@@ -1,4 +1,4 @@
-unit CellTexData;
+﻿unit CellTexData;
 
 interface
 

@@ -1,4 +1,4 @@
-{$resource 'TData.dll'}
+﻿{$resource 'TData.dll'}
 unit TData;
 
 var

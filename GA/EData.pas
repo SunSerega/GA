@@ -1,4 +1,4 @@
-unit EData;
+﻿unit EData;
 
 uses REData, glObjectData, CFData, System.Drawing;
 

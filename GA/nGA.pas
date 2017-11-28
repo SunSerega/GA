@@ -1,4 +1,4 @@
-uses
+﻿uses
   GData, VData, RData, EData, CFData, System.Drawing, OpenGL;
   //GData, glObjectData, System.Drawing, OpenGl, VData, REData, RData, EData, CFData;
 

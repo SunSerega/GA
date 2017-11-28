@@ -1,4 +1,4 @@
-unit PerlinNoiseData;
+﻿unit PerlinNoiseData;
 
 procedure WTF(name: string; params obj: array of object) := System.IO.File.AppendAllText(name, string.Join('', obj.ConvertAll(a -> _ObjectToString(a))) + char(13) + char(10));
 

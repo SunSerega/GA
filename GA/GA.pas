@@ -1,17 +1,18 @@
-uses
+п»їuses
   VData, RData, EData, REData, CFData, System.Drawing, GData, glObjectData, OpenGL, CData;
 
 {$region ToDo}{
   
   TODO Z phisics
-  TODO перенести старые комнаты
+  TODO Conns w List
+  TODO RData.StairTube
 
 
   ToDo Segment.MapHitBox List<HitBoxT>->array of PointF
-  ToDo привести все модули к нормальному виду
+  ToDo РїСЂРёРІРµСЃС‚Рё РІСЃРµ РјРѕРґСѓР»Рё Рє РЅРѕСЂРјР°Р»СЊРЅРѕРјСѓ РІРёРґСѓ
   ToDo Manu show
-  ToDo перенести функции и типы из GData в CFData
-  ToDo нормальные данные о игроке
+  ToDo РїРµСЂРµРЅРµСЃС‚Рё С„СѓРЅРєС†РёРё Рё С‚РёРїС‹ РёР· GData РІ CFData
+  ToDo РЅРѕСЂРјР°Р»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ Рѕ РёРіСЂРѕРєРµ
   
   ToDo static Init
    -EntranceT1
@@ -19,13 +20,13 @@ uses
    -Canal
   
   ToDo Canal
-   -Пол кривой...
+   -РџРѕР» РєСЂРёРІРѕР№...
   
   ToDo TSeg
    -MapDrawObj
    -MapHitBox
 
-  ToDo костыли
+  ToDo РєРѕСЃС‚С‹Р»Рё
    -TCData.RTG                    #529 ?
    -glObjectData.HBTDOReverse     #568 !  27.11.17
    -glObjectData.glTObject.create #575 ?
@@ -34,10 +35,10 @@ uses
 
   ToDo Textures
    -NORMAL text textures
-   -TCData изменить создание текстур
-   -Соеденение текстур
-   -Подгрузка и отгрузка текстур
-   -Переделать все текстуры комнат
+   -TCData РёР·РјРµРЅРёС‚СЊ СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
+   -РЎРѕРµРґРµРЅРµРЅРёРµ С‚РµРєСЃС‚СѓСЂ
+   -РџРѕРґРіСЂСѓР·РєР° Рё РѕС‚РіСЂСѓР·РєР° С‚РµРєСЃС‚СѓСЂ
+   -РџРµСЂРµРґРµР»Р°С‚СЊ РІСЃРµ С‚РµРєСЃС‚СѓСЂС‹ РєРѕРјРЅР°С‚
 
   ToDo Rooms
    -Canal move Random from PosOk to RarityOk
@@ -395,10 +396,10 @@ end;
 procedure FormInit;
 begin
   
-  M0B1 := new glOObject(NewGlObj.Rectangle(false, 1, 1, 1, 1, M0B1rect), NewGlObj.TexInRectangle(Texture.GetTextTexture('Играть',     $FF, $FF, $FF, $FF,     $00, $00, $00, $00), M0B1rect));
-  M0B2 := new glOObject(NewGlObj.Rectangle(false, 1, 1, 1, 1, M0B2rect), NewGlObj.TexInRectangle(Texture.GetTextTexture('*Заглушка*', $FF, $FF, $FF, $FF,     $00, $00, $00, $00), M0B2rect));
-  M0B3 := new glOObject(NewGlObj.Rectangle(false, 1, 1, 1, 1, M0B3rect), NewGlObj.TexInRectangle(Texture.GetTextTexture('*Заглушка*', $FF, $FF, $FF, $FF,     $00, $00, $00, $00), M0B3rect));
-  M0B4 := new glOObject(NewGlObj.Rectangle(false, 1, 1, 1, 1, M0B4rect), NewGlObj.TexInRectangle(Texture.GetTextTexture('Выход',      $FF, $FF, $FF, $FF,     $00, $00, $00, $00), M0B4rect));
+  M0B1 := new glOObject(NewGlObj.Rectangle(false, 1, 1, 1, 1, M0B1rect), NewGlObj.TexInRectangle(Texture.GetTextTexture('РРіСЂР°С‚СЊ',     $FF, $FF, $FF, $FF,     $00, $00, $00, $00), M0B1rect));
+  M0B2 := new glOObject(NewGlObj.Rectangle(false, 1, 1, 1, 1, M0B2rect), NewGlObj.TexInRectangle(Texture.GetTextTexture('*Р—Р°РіР»СѓС€РєР°*', $FF, $FF, $FF, $FF,     $00, $00, $00, $00), M0B2rect));
+  M0B3 := new glOObject(NewGlObj.Rectangle(false, 1, 1, 1, 1, M0B3rect), NewGlObj.TexInRectangle(Texture.GetTextTexture('*Р—Р°РіР»СѓС€РєР°*', $FF, $FF, $FF, $FF,     $00, $00, $00, $00), M0B3rect));
+  M0B4 := new glOObject(NewGlObj.Rectangle(false, 1, 1, 1, 1, M0B4rect), NewGlObj.TexInRectangle(Texture.GetTextTexture('Р’С‹С…РѕРґ',      $FF, $FF, $FF, $FF,     $00, $00, $00, $00), M0B4rect));
   
   Texture.CreateWaitTextures;
   

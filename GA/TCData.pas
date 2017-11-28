@@ -1,4 +1,4 @@
-unit TCData;
+﻿unit TCData;
 
 uses GData,CFData,System.Drawing;
 
@@ -178,30 +178,30 @@ type
 
 function GetStWallTex(w, h: cardinal): Texture;
 begin
-    var LT := System.DateTime.Now;
-    
-    var ba := new byte[w * h * 3];
-    begin
-      var dx := Random(WallTexPart.w);
-      var dy := Random(WallTexPart.w);
-      dx := 0;
-      dy := 0;
-      for x: cardinal := 0 to w - 1 do
-        for y: cardinal := 0 to h - 1 do
-        begin
-          var i := (x + y * w) * 3;
-          var C := WallTexPart.pts[(x + dx) mod WallTexPart.w, (y + dy) mod WallTexPart.w];
-          ba[i + 0] := C.R;
-          ba[i + 1] := C.G;
-          ba[i + 2] := C.B;
-        end;
-    end;
-    
-    var cracks := WallCrack.GetCracksList;
-    
+    //var LT := System.DateTime.Now;
+  
+  var ba := new byte[w * h * 3];
+  begin
+    var dx := Random(WallTexPart.w);
+    var dy := Random(WallTexPart.w);
+    dx := 0;
+    dy := 0;
+    for x: cardinal := 0 to w - 1 do
+      for y: cardinal := 0 to h - 1 do
+      begin
+        var i := (x + y * w) * 3;
+        var C := WallTexPart.pts[(x + dx) mod WallTexPart.w, (y + dy) mod WallTexPart.w];
+        ba[i + 0] := C.R;
+        ba[i + 1] := C.G;
+        ba[i + 2] := C.B;
+      end;
+  end;
+  
+  var cracks := WallCrack.GetCracksList;
+  
     //WTF('Log.txt', (w, h), System.DateTime.Now - LT);
-    
-    Result := new Texture(w, h, ba, false, true);
+  
+  Result := new Texture(w, h, ba, false, true);
 end;
 
 {$endregion}
@@ -215,7 +215,7 @@ type
     private class Walls := new Dictionary<(cardinal, cardinal), List<Texture>>;
     private class Floors := new Dictionary<(cardinal, cardinal), List<Texture>>;
     
-    public class TCTC : word := 0;
+    public class TCTC: word := 0;
     
     public class function NextWall(w, h: cardinal): Texture;
     begin

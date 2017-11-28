@@ -1,4 +1,4 @@
-unit glObjectData;
+п»їunit glObjectData;
 
 interface
 
@@ -44,11 +44,11 @@ type
         new TPoint(HB.p1.X, HB.p1.Y, 1 * h, TX + 0 * TW, TY + 1 * TH));
     end;
     
-    public constructor create(HB: HitBoxT; Tex: Texture; TX, TY, TW, TH: Single);begin create(HB, Tex, TX, TY, TW, TH, -WallHeigth); end;//ToDo костыль!
+    public constructor create(HB: HitBoxT; Tex: Texture; TX, TY, TW, TH: Single);begin create(HB, Tex, TX, TY, TW, TH, -WallHeigth); end;//ToDo РєРѕСЃС‚С‹Р»СЊ!
     
-    public constructor create(HB: HitBoxT; Tex: Texture; h: integer);begin create(HB, Tex, 0, 0, HB.w / h, 1, h); end;//ToDo костыль!
+    public constructor create(HB: HitBoxT; Tex: Texture; h: integer);begin create(HB, Tex, 0, 0, HB.w / h, 1, h); end;//ToDo РєРѕСЃС‚С‹Р»СЊ!
     
-    public constructor create(HB: HitBoxT; Tex: Texture);begin create(HB, Tex, 0, 0, -HB.w / WallHeigth, 1, -WallHeigth); end;//ToDo костыль!
+    public constructor create(HB: HitBoxT; Tex: Texture);begin create(HB, Tex, 0, 0, -HB.w / WallHeigth, 1, -WallHeigth); end;//ToDo РєРѕСЃС‚С‹Р»СЊ!
   
   end;
   glPObject = record(glObject)
@@ -205,9 +205,9 @@ type
 
 end;
 
-///Создаёт стенки комнат из хитбоксов
+///РЎРѕР·РґР°С‘С‚ СЃС‚РµРЅРєРё РєРѕРјРЅР°С‚ РёР· С…РёС‚Р±РѕРєСЃРѕРІ
 function HBTDO(w0: real; var w1: real; Tex: Texture; HBs: List<HitBoxT>): List<glObject>;
-///Создаёт стенки комнат из хитбоксов
+///РЎРѕР·РґР°С‘С‚ СЃС‚РµРЅРєРё РєРѕРјРЅР°С‚ РёР· С…РёС‚Р±РѕРєСЃРѕРІ
 function HBTDOReverse(w0: real; var w1: real; Tex: Texture; HBs: List<HitBoxT>): List<glObject>;
 
 implementation
@@ -274,7 +274,7 @@ end;
 function HBTDOReverse(w0: real; var w1: real; Tex: Texture; HBs: List<HitBoxT>): List<glObject>;
 begin
   
-  HBs := HBs.Reverse.ToList;//ToDo Костыль!
+  HBs := HBs.Reverse.ToList;//ToDo РљРѕСЃС‚С‹Р»СЊ!
   Result := new List<glObject>(HBs.Count);
   
   w1 := w0 - HBs[0].w;

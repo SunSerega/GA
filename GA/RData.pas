@@ -1,4 +1,4 @@
-unit RData;
+п»їunit RData;
 
 uses CFData, TCData, glObjectData, System.Drawing, REData, EData, GData, OpenGl, PABCSystem, VData;
 
@@ -914,7 +914,7 @@ type
       Result := PreInit(Pre, nC.Whose.DangeonIn, nC, (new ConnectionT[](
         new ConnectionT(0, E_Whb, nil, nil),
         new ConnectionT(0, E_Nhb, nil, nil),
-        new ConnectionT(0, E_Ehb, nil, nil))).ToList, StMapHB.ToList.Mlt(0.099));//ToDo костыль!
+        new ConnectionT(0, E_Ehb, nil, nil))).ToList, StMapHB.ToList.Mlt(0.099));//ToDo РєРѕСЃС‚С‹Р»СЊ!
       
     end;
     
@@ -985,7 +985,7 @@ type
     
     {$region Static Data}
     
-    private class TW := 5 * RW;//ToDo костыль! class->const
+    private class TW := 5 * RW;//ToDo РєРѕСЃС‚С‹Р»СЊ! class->const
     
     private class Pre: SegmentPreData;
     
@@ -1081,7 +1081,7 @@ type
     public procedure CloseWay(C: ConnectionT); override;
     begin
       if Connections.Remove(C) then
-        raise new System.ArgumentException('Этого не должно было случиться...') else
+        raise new System.ArgumentException('Р­С‚РѕРіРѕ РЅРµ РґРѕР»Р¶РЅРѕ Р±С‹Р»Рѕ СЃР»СѓС‡РёС‚СЊСЃСЏ...') else
         raise new System.ArgumentException('No such connection of this room');
     end;
     
