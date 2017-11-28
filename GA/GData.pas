@@ -38,28 +38,6 @@ procedure Log2(params data: array of object) := WTF('Log2.txt', data);
 
 procedure Log3(params data: array of object) := WTF('Log3.txt', data);
 
-type
-  CameraT = record
-    X, Y, Z, dx, dy, dz: real;
-    RotX, RotY, drx, dry: Single;
-    
-    const Speed = 0.4 * 10;
-    const Boost = 1.9;
-    
-    const RotSpeed = 0.0004;
-    
-    constructor;
-    begin
-      X := 0;
-      Y := 0;
-      Z := 0;
-      RotX := 0;
-      RotY := 0.5;
-    end;
-    
-    procedure SaveToLog := WTF('Log.txt', 'pos:[', (X, Y, Z), '->', (dx, dy, dz), '],dir:[', (RotX, RotY), '->', (drx, dry), ']');
-  end;
-
 {$region Dop}
 
 type

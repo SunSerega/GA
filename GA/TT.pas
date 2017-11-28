@@ -22,8 +22,6 @@ end;
 
 begin
   
-  System.IO.File.Delete('CFData.pcu');
-  
   ConvertBMtSI('стена забитая досками.bmp', 'WPW.im', false);
   ConvertBMtSI('WallTexPart.bmp', 'WallTexPart.im', false);
   

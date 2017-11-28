@@ -18,6 +18,28 @@ type
     Regs: List<Point3i>;
   end;
   
+  CameraT = record
+    X, Y, Z, dx, dy, dz: real;
+    RotX, RotY, drx, dry: Single;
+    PlayerRoom: Segment;
+    
+    const Speed = 0.4 * 10;
+    const Boost = 1.9;
+    
+    const RotSpeed = 0.0004;
+    
+    constructor;
+    begin
+      X := 0;
+      Y := 0;
+      Z := 0;
+      RotX := 0;
+      RotY := 0.5;
+    end;
+    
+    procedure SaveToLog := Log('pos:[', (X, Y, Z), '->', (dx, dy, dz), '],dir:[', (RotX, RotY), '->', (drx, dry), ']');
+  end;
+  
   ConnectionT = class
   
     //private class TC: int64 := 0;
@@ -92,6 +114,31 @@ type
     class WPWTex := new Texture(GetResourceStream('WPW.im'), false, false, true, true);
     
     class MaxZGen: smallint;
+    
+    class StRarity := Dict(
+    
+    ('GA.Hall',  30),
+    ('GA.Canal',   3),
+    ('GA.TSeg',  45),
+    ('GA.Treasury', 100),
+    ('GA.StairTube',   0),
+    
+    ('Void.SegVoid',   0)
+    
+    );
+    
+    class StССRarity := Dict(
+  
+    ('GA.EntranceT1', (0.0,  true)),  
+    ('GA.Hall', (1.5, false)),
+    ('GA.Canal', (0.0,  true)),
+    ('GA.TSeg', (1.5, false)),
+    ('GA.Treasury', (1.5, false)),
+    ('GA.StairTube', (1.5, false)),
+    
+    ('Void.SegVoid', (0.0, false))
+    
+    );
   
   public 
     X, Y: real;
@@ -109,11 +156,13 @@ type
     
     Connections: List<ConnectionT>;// -XY -Z -rot
     
+    public function ClassName: string; abstract;
+    
     public procedure AddToDangeon(D: Dangeon; Regs: List<Point3i>);
     
     public function GetH(pX, pY: Single): Single; virtual := 0;
     
-    public function GetAllHB := WallHitBox + Connections.Where(C -> C.Empty).ToList.ConvertAll(C -> C.HB-new PointF(X,Y));
+    public function GetAllHB := WallHitBox + Connections.Where(C -> C.Empty).ToList.ConvertAll(C -> C.HB - new PointF(X, Y));
     
     public function RoomWait: List<ConnectionT>;
     
@@ -213,9 +262,9 @@ type
     
     public procedure CloseWay(C: ConnectionT); virtual := StCloseWay(C);
     
-    public function CCRarity: real; virtual := 2;
+    public function CCRarity: real; virtual := StССRarity[ClassName].Item1;
     
-    public function ForceConnecting; virtual := false;
+    public function ForceConnecting; virtual := StССRarity[ClassName].Item2;
     
     protected function StWantConnect(T: Segment) := self.ForceConnecting or T.ForceConnecting or ((Random * self.CCRarity < 1) and (Random * T.CCRarity < 1));
     
@@ -342,8 +391,6 @@ type
         C.AddToWait;
       
     end;
-    
-    public function ClassName: string; abstract;
   
   end;
   
@@ -352,11 +399,10 @@ type
   private 
     idused: List<uint64>;
     WaitRoomsCreationThread: System.Threading.Thread;
+    nCamera: CameraT;
   
   public 
     Rooms: List<Segment>;
-    PlayerRoom: Segment;
-    nPlayerRoom: Segment;
     RoomWait: List<ConnectionT>;
     
     RegW: word;
@@ -384,6 +430,7 @@ type
     
     public procedure DrawMap(X, Y, Z, R: Single);
     begin
+      var PlayerRoom := nCamera.PlayerRoom;
       X += PlayerRoom.X;
       Y += PlayerRoom.Y;
       Z := Z / RW + PlayerRoom.Z;
@@ -429,9 +476,10 @@ type
           end;
     end;
     
-    public procedure Tick;
+    public procedure Tick(Camera: CameraT);
     begin
-      PlayerRoom.PlayerTick;
+      nCamera := Camera;
+      nCamera.PlayerRoom.PlayerTick;
       foreach var R in Rooms.ToList do
         R.DangeonTick;
     end;
@@ -443,12 +491,15 @@ type
       
       while true do
         try
+          var PlayerRoom := nCamera.PlayerRoom;
+          {
           System.Console.Clear;
           writeln('Комнат сгенерировано:                ', Rooms.Count);
           writeln('Комнат ожидает генерации:            ', RoomWait.Count);
           writeln('Глубина погружения:                  ', PlayerRoom.Z);
           writeln('Глубина сгенерированого подземелья:  ', Segment.MaxZGen);
           writeln('Примерная максимальная глубина:      ', MaxR / VRmlt);
+          {}
           if RoomWait.Count = 0 then begin Sleep(100); continue; end;
           var C := RoomWait[0];
           var ForceCreation := false;
@@ -516,9 +567,9 @@ type
           
           if (Random < Power(sqrt(sqr(C.Whose.X) + sqr(C.Whose.Y) + sqr((C.Whose.Z) * VRmlt)) / MaxR, 10)) or (GetRandSegment(C) = nil) then
           begin
-            Log(C.ConTo=nil?'nil':C.ConTo.ToString);
+            Log(C.ConTo = nil ? 'nil' : C.ConTo.ToString);
             Log(C.Empty);
-            Log('-'*50);
+            Log('-' * 50);
             C.Whose.CloseWay(C);
           end;
         
@@ -541,8 +592,8 @@ type
       idused := new List<uint64>(1024);
       Rooms := new List<Segment>(1024);
       RoomWait := new List<ConnectionT>;
-      nPlayerRoom := GetNewEntrance(self);
-      PlayerRoom := nPlayerRoom;
+      nCamera.PlayerRoom := GetNewEntrance(self);
+      Tick(nCamera);
       WaitRoomsCreationThread := new System.Threading.Thread(WaitRoomsCreation);
       WaitRoomsCreationThread.Start;
     end;

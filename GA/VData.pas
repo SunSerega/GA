@@ -73,6 +73,4 @@ var
   //CT:=newTimeReader;
   RGT:=new TimeReader;
 
-function PlRoom := PlayerDangeon.PlayerRoom;
-
 end.

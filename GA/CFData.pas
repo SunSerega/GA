@@ -49,40 +49,13 @@ type
   
   {$region Misk}
   
-  ///прост доп класс чтоб вероятности не_создания комнаты были все в 1 месте собраны, рядом с RW и подобным
-  StRarity = abstract sealed class
-  
-  public 
-    class Hall := 30;
-    class Canal := 3;
-    class TSeg := 45;
-    class Treasury := 100;
-    
-    //class Corner := 15;
-    class StairTube := 50;
-  
-  end;
-  ///прост доп класс чтоб вероятности не_соеденения соеденений комнат были все в 1 месте собраны, рядом с RW и подобным
-  StССRarity = abstract sealed class
-  
-  public 
-    class Hall := 0;//1.5;
-    //class Canal := force;
-    class TSeg := 0;
-    
-    class Corner := 0;
-    class Treasury := 0;
-    class Staircase := 0;
-  
-  end;
-  
-  ///Тип точки с real координатами
+  ///Тип 3D точки с real координатами
   PPoint = GData.PPoint;
-  ///Тип точки с real координатами и данными о цвете
+  ///Тип 3D точки с real координатами и Single данными о цвете
   CPoint = GData.CPoint;
   
-  ///Тип для чтения времени, как таймер только точный
-  TimeReader = class
+  ///Тип для отсчёта времени, как таймер только точный
+  TimeReader = record
     lt: System.DateTime;
     te := System.TimeSpan.Zero;
     r := false;
@@ -99,7 +72,6 @@ type
       var ts := (System.DateTime.Now - lt);
       te := te.Add(ts);
       lt.Add(ts);
-      r := false;
     end;
     ///останавливает счётчик и пересчитывает время
     procedure Stop;
@@ -225,6 +197,8 @@ type
   ///Тип большинства хитбоксов, 2 PointF в определённом порядке
   HitBoxT = record
     p1, p2: PointF ;
+    
+    class function Empty:=default(HitBoxT);//ToDo костыль! 
     
     function rot := CFData.ArcTg(p2.X - p1.X, p2.Y - p1.Y) ;
     

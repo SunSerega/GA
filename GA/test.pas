@@ -1,10 +1,10 @@
-type
-  t1=class
-    
-    constructor() := writeln;
-    
-  end;
-
 begin
+  
+  {$region r1}
+  
+  loop ReadLnInteger do
+  //код
+  
+  {$endregion}
   
 end.

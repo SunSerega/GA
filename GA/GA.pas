@@ -1,27 +1,33 @@
 uses
-  VData, RData, EData, CFData, System.Drawing, GData, glObjectData, OpenGL, CData;
+  VData, RData, EData, REData, CFData, System.Drawing, GData, glObjectData, OpenGL, CData;
 
 {$region ToDo}{
-
+  
+  TODO Z phisics
   TODO перенести старые комнаты
 
 
   ToDo Segment.MapHitBox List<HitBoxT>->array of PointF
-  ToDo привести все модули в нормальному виду
+  ToDo привести все модули к нормальному виду
   ToDo Manu show
   ToDo перенести функции и типы из GData в CFData
-  ToDo CFData.ArrFuncs->extensionmethod
-  ToDo переделать RData.Canal.GetH
+  ToDo нормальные данные о игроке
+  
+  ToDo static Init
+   -EntranceT1
+   -Hall
+   -Canal
+  
   ToDo TSeg
    -MapDrawObj
    -MapHitBox
 
   ToDo костыли
-   -TCData.RTG-#529
+   -TCData.RTG                    #529 ?
+   -glObjectData.HBTDOReverse     #568 !  27.11.17
+   -glObjectData.glTObject.create #575 ?
+   -CFData.HitBoxT.Empty          #577 !  26.11.17
    -CFData [$savepcu false]
-   -RData.TSeg-#566
-   -glObjectData.HBTDOReverse-#568
-   -glObjectData.glTObject.create-#575
 
   ToDo Textures
    -NORMAL text textures
@@ -107,6 +113,9 @@ begin
   begin
     
     PlayerDangeon := new Dangeon(RW * 4, RW * 100 * 1.7, RW / 3);
+    Camera := new CameraT;
+    Camera.PlayerRoom := PlayerDangeon.Rooms.First;
+    Camera.RotX := -Camera.PlayerRoom.rot;
     
     if GetKeyState(9) shl 7 = 128 then
     begin
@@ -169,8 +178,7 @@ procedure CalcGameM1;
 {$endregion}
 begin
   
-  PlayerDangeon.PlayerRoom := PlayerDangeon.nPlayerRoom;
-  PlayerDangeon.Tick;
+  PlayerDangeon.Tick(Camera);
   
 end;
 
@@ -290,6 +298,7 @@ begin
   //glRotatef(ViewpointRot / Pi * 180, 0, 0, 1);
   
   var nCamera := Camera;
+  var PlRoom := nCamera.PlayerRoom;
   SetUpCamera(nCamera.X, nCamera.Y, nCamera.Z - CameraHover, nCamera.RotX, nCamera.RotY, CameraHeigth);
   
   {$endregion}
@@ -450,6 +459,7 @@ begin
           var pcs := new byte[4 * WW * WH];
           glReadPixels(0, 0, WW, WH, GL_RGBA, GL_UNSIGNED_BYTE, @pcs[0]);
           var ScreenSave := new System.Threading.Thread(()->try
+            
             var b := new Bitmap(WW, WH);
             var i := 0;
             for var y := WH - 1 downto 0 do
@@ -460,6 +470,7 @@ begin
               end;
             System.Windows.Forms.Clipboard.SetImage(b);
             System.Console.Beep;
+          
           except
             on e: System.Exception do
               SaveError('ScreenSave:', e);
@@ -499,6 +510,8 @@ end;
 procedure CameraMovementTick(var nCamera: CameraT; var lMP, nMP: Point; var lk, nk: array of byte);
 begin
   
+  {$region CameraRot}
+  
   if nk[4] shr 7 = 1 then
   begin
     
@@ -530,6 +543,8 @@ begin
     
   end;
   
+  {$endregion}
+  
   var sp := Camera.Speed;
   if nk[162] shr 7 = 1 then sp *= Camera.Boost;
   var dxm := ((nk[68] shr 7 = 1) ? Sp : 0) - ((nk[65] shr 7 = 1) ? Sp : 0);
@@ -544,18 +559,18 @@ begin
     
     if not PlayerNotClipping then
     begin
-      TestHit(PlayerR, PlRoom.GetAllHB, Pos, Vec);
+      TestHit(PlayerR, nCamera.PlayerRoom.GetAllHB, Pos, Vec);
       
       nCamera.dx := Vec.X;
       nCamera.dy := Vec.Y;
     end;
     
     
-    foreach var C in PlRoom.Connections.ToList do
+    foreach var C in nCamera.PlayerRoom.Connections.ToList do
       if C.ConTo <> nil then
         if HaveIseptPPPD(C.HB.p1, C.HB.p2, Pos + new PointF(C.Whose.X, C.Whose.Y), Vec) then
         begin
-          PlayerDangeon.nPlayerRoom := C.ConTo;
+          nCamera.PlayerRoom := C.ConTo;
           nCamera.X += (C.Next.HB.p1.X - C.ConTo.X) - (C.HB.p2.X - C.Whose.X);
           nCamera.Y += (C.Next.HB.p1.Y - C.ConTo.Y) - (C.HB.p2.Y - C.Whose.Y);
           break;
@@ -564,7 +579,7 @@ begin
   
   nCamera.X += nCamera.dx;
   nCamera.Y += nCamera.dy;
-  nCamera.Z := PlRoom.GetH(nCamera.X, nCamera.Y);
+  nCamera.Z := nCamera.PlayerRoom.GetH(nCamera.X, nCamera.Y);
   
   nCamera.dx *= 0.935;
   nCamera.dy *= 0.935;
@@ -613,7 +628,7 @@ begin
       
       Currsor2.Tick(MP);
       
-      if GM <> 1 then begin Camera := new CameraT; continue;{} end;
+      if GM <> 1 then begin Sleep(100); continue; end;
       
       //if not LFF then continue;
       
@@ -634,7 +649,7 @@ begin
       if t > System.TimeSpan.Zero then
         System.Threading.Thread.Sleep(t);
       LT := LT.AddMilliseconds(tw);
-      
+    
     except
       on e: System.Exception do
         SaveError('CameraMovementThread: ', e);
