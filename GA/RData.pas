@@ -81,12 +81,14 @@ type
     
     {$endregion}
     
-    public function GetH(pX, pY: Single): Single; override;
+    public function GetFloor(nCamera:CameraT): FloorData; override;
     begin
-      pY := -(Rotate(pX, pY, -rot).Y / RW - 0.5);
-      if pY < 1 then Result := 0 else
-      if pY < 4 then Result := (pY - 1) / 3 * RW else
-        Result := RW;
+      
+      var r := -(Rotate(nCamera.X, nCamera.Y, -rot).Y / RW - 0.5);
+      
+      if r > 4 then Result := new FloorData(0,new SLine(false,0,RW)) else
+      if r > 1 then Result := new FloorData(rot,new SLine(false,1/3,(r-1)/3*RW));
+      
     end;
     
     public constructor(D: Dangeon);
@@ -472,6 +474,7 @@ type
     HB1, HB2: HitBoxT;
     p1, p2: PointF;
     LD1, LD2: SLine;
+    SlopeA:Single;
     
     public const Name = 'GA.Canal';
     
@@ -576,6 +579,7 @@ type
         p2 := HB2.Senter;
         LD2 := SLine.LineData(HB1.p1, HB1.p2);
         LD1 := LD2.Perpend;
+        SlopeA := nZ/sqrt(sqr(p1.X-p2.X)+sqr(p1.Y-p2.Y));
         
       end;
       Init(Pre, nC, W_Ehb + W_Whb, 2, 1);
@@ -638,14 +642,14 @@ type
     end;
     
     
-    public function GetH(pX, pY: Single): Single; override;
+    public function GetFloor(nCamera:CameraT): FloorData; override;
     begin
       if nZ = 0 then exit;
+      var pX := nCamera.X;
+      var pY := nCamera.Y;
       var pt := new PointF(pX, pY);
-      if OnLeft(HB1.p1, HB1.p2, pt) then
-        exit else
-      if OnLeft(HB2.p1, HB2.p2, pt) then
-        Result := nZ * RW else
+      if OnLeft(HB1.p1, HB1.p2, pt) then exit else
+      if OnLeft(HB2.p1, HB2.p2, pt) then Result := new FloorData(0,new SLine(false,0,nZ * RW)) else
       begin
         var Res := Isept(LD1, LD2);
         LD2.BLineData(pt);
@@ -659,7 +663,7 @@ type
             Swap(Z1, Z2);
             Swap(pMin, pMax);
           end;
-          Result := (Z1 + (Z2 - Z1) * (Res.Y - pMin) / (pMax - pMin)) * RW;
+          Result := new FloorData(rot,new SLine(false,SlopeA,(Z1 + (Z2 - Z1) * (Res.Y - pMin) / (pMax - pMin)) * RW));
           
         end else begin
           
@@ -669,7 +673,7 @@ type
             Swap(Z1, Z2);
             Swap(pMin, pMax);
           end;
-          Result := (Z1 + (Z2 - Z1) * (Res.X - pMin) / (pMax - pMin)) * RW;
+          Result := new FloorData(rot,new SLine(false,SlopeA,(Z1 + (Z2 - Z1) * (Res.X - pMin) / (pMax - pMin)) * RW));
           
         end;
       end;

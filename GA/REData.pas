@@ -8,6 +8,8 @@ type
   Segment = class;
   Dangeon = class;
   
+  {$region Dop Types}
+  
   SegmentPreData = record
     X, Y: real;
     Z, ZMin, ZMax: smallint;
@@ -39,6 +41,21 @@ type
     
     procedure SaveToLog := Log('pos:[', (X, Y, Z), '->', (dx, dy, dz), '],dir:[', (RotX, RotY), '->', (drx, dry), ']');
   end;
+  
+  FloorData = record
+    
+    rot:real;
+    slope:SLine;
+    
+    constructor create(rot:real;slope:SLine);
+    begin
+      self.rot := rot;
+      self.slope := slope;
+    end;
+    
+  end;
+  
+  {$endregion}
   
   ConnectionT = class
   
@@ -160,7 +177,7 @@ type
     
     public procedure AddToDangeon(D: Dangeon; Regs: List<Point3i>);
     
-    public function GetH(pX, pY: Single): Single; virtual := 0;
+    public function GetFloor(nCamera:CameraT); virtual := default(FloorData);
     
     public function GetAllHB := WallHitBox + Connections.Where(C -> C.Empty).ToList.ConvertAll(C -> C.HB - new PointF(X, Y));
     

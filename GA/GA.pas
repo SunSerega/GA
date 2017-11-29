@@ -2,8 +2,7 @@
   VData, RData, EData, REData, CFData, System.Drawing, GData, glObjectData, OpenGL, CData;
 
 {$region ToDo}{
-  
-  TODO Z phisics
+
   TODO Conns w List
   TODO RData.StairTube
 
@@ -13,15 +12,19 @@
   ToDo Manu show
   ToDo перенести функции и типы из GData в CFData
   ToDo нормальные данные о игроке
+
+  ToDo Z phisics
+   -отражения вектора движения
+   -Chardge Jump
   
   ToDo static Init
    -EntranceT1
    -Hall
    -Canal
-  
+
   ToDo Canal
    -Пол кривой...
-  
+
   ToDo TSeg
    -MapDrawObj
    -MapHitBox
@@ -549,6 +552,25 @@ begin
   
   {$endregion}
   
+  {$region FloorCalc}
+  
+  var Floor := nCamera.PlayerRoom.GetFloor(nCamera);
+  if nCamera.Z < Floor.Slope.b then
+    nCamera.dz += 7;
+  nCamera.Z += nCamera.dz;
+  if nCamera.Z > Floor.slope.b then
+  begin
+    nCamera.Z := Floor.slope.b;
+    nCamera.dz := 0;
+  end;
+  
+  {$endregion}
+  
+  {$region WASD}
+  
+  if abs(nCamera.Z-Floor.Slope.b)<5 then
+  begin
+  
   var sp := Camera.Speed;
   if nk[162] shr 7 = 1 then sp *= Camera.Boost;
   var dxm := ((nk[68] shr 7 = 1) ? Sp : 0) - ((nk[65] shr 7 = 1) ? Sp : 0);
@@ -557,7 +579,14 @@ begin
   nCamera.dx += dxm * Cos(+Camera.RotX) + dym * Sin(Camera.RotX);
   nCamera.dy += dxm * Sin(-Camera.RotX) + dym * Cos(Camera.RotX);
   
-  begin
+    if nk[32] shr 7 = 1 then nCamera.dz := -80;
+  
+  end;
+  
+  {$endregion}
+  
+  {$region WallCalc}
+  
     var Pos := new PointF(nCamera.X, nCamera.Y);
     var Vec := new PointF(nCamera.dx, nCamera.dy);
     
@@ -569,7 +598,10 @@ begin
       nCamera.dy := Vec.Y;
     end;
     
-    
+  {$endregion}
+  
+  {$region ExitCalc}
+  
     foreach var C in nCamera.PlayerRoom.Connections.ToList do
       if C.ConTo <> nil then
         if HaveIseptPPPD(C.HB.p1, C.HB.p2, Pos + new PointF(C.Whose.X, C.Whose.Y), Vec) then
@@ -577,18 +609,18 @@ begin
           nCamera.PlayerRoom := C.ConTo;
           nCamera.X += (C.Next.HB.p1.X - C.ConTo.X) - (C.HB.p2.X - C.Whose.X);
           nCamera.Y += (C.Next.HB.p1.Y - C.ConTo.Y) - (C.HB.p2.Y - C.Whose.Y);
+          nCamera.Z += ((C.Next.Z*0-C.ConTo.Z)-(C.Z*0-C.Whose.Z))*RW;
+          CameraMovementTick(nCamera,lMP,nMP,lk,nk);
+          exit;
           break;
         end;
-  end;
+        
+  {$endregion}
+  
+  {$region Movement}
   
   nCamera.X += nCamera.dx;
   nCamera.Y += nCamera.dy;
-  nCamera.Z := nCamera.PlayerRoom.GetH(nCamera.X, nCamera.Y);
-  
-  nCamera.dx *= 0.935;
-  nCamera.dy *= 0.935;
-  
-  
   
   nCamera.RotX += nCamera.drx;
   nCamera.RotY += nCamera.dry;
@@ -596,8 +628,18 @@ begin
   if nCamera.RotY > Pi / 2 then nCamera.RotY := Pi / 2 else
   if nCamera.RotY < 0    then nCamera.RotY := 0;
   
+  if abs(nCamera.Z-Floor.Slope.b)<5 then
+  begin
+    
+    nCamera.dx *= 0.935;
+    nCamera.dy *= 0.935;
+    
+  end;
+  
   nCamera.drx *= 0.935;
   nCamera.dry *= 0.935;
+  
+  {$endregion}
   
 end;
 
