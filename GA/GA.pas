@@ -13,11 +13,10 @@
   ToDo нормальные данные о игроке
   ToDo оптимизировать создание новых комнат
   ToDo в Canal кривой пол
+  ToDo разнести серверный и клиенский потоки
   
   
   ToDo привести все модули к нормальному виду
-   -RData
-   -EData
    -REData
    -GData
    -TCData
@@ -62,6 +61,7 @@
     -Outhers
    -Item
    -Prop
+   -Segment.DangeonTick
 
   ToDo Calc
    -Wep1

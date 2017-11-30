@@ -1,6 +1,6 @@
 ﻿unit RData;
 
-uses CFData, TCData, glObjectData, System.Drawing, REData, EData, GData, OpenGl, PABCSystem, VData;
+uses CFData, TCData, glObjectData, System.Drawing, REData, EData, GData, OpenGl, VData;
 
 //                 -   N                  
 //                     |                  

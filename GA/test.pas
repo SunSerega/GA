@@ -1,6 +1,11 @@
-﻿begin
+﻿type
+  ///тип t1
+  t1=class;
   
-  var b:=new byte[2,2]((0,1),(2,3));
-  writeln(b.ToArray);
+  t1=class
+    
+  end;
+
+begin
   
 end.
