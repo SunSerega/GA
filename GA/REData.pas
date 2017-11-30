@@ -104,7 +104,6 @@ type
     end;
   
   end;
-  
   //ToDo Init stTick stDraw Items(draw parts, ect)
   Entity = abstract class
   

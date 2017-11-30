@@ -8,22 +8,32 @@
 
 
   ToDo Segment.MapHitBox List<HitBoxT>->array of PointF
-  ToDo привести все модули к нормальному виду
   ToDo Manu show
   ToDo перенести функции и типы из GData в CFData
   ToDo нормальные данные о игроке
-
+  ToDo оптимизировать создание новых комнат
+  ToDo в Canal кривой пол
+  
+  
+  ToDo привести все модули к нормальному виду
+   -RData
+   -EData
+   -REData
+   -GData
+   -TCData
+  
+  ToDo персонаж
+   -Texture
+   -All body parths phisics
+   
   ToDo Z phisics
    -отражения вектора движения
    -Chardge Jump
   
-  ToDo static Init
+  ToDo Static Init
    -EntranceT1
    -Hall
    -Canal
-
-  ToDo Canal
-   -Пол кривой...
 
   ToDo TSeg
    -MapDrawObj
