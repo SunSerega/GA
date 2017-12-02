@@ -2,22 +2,22 @@
   VData, RData, EData, REData, CFData, System.Drawing, GData, glObjectData, OpenGL, CData;
 
 {$region ToDo}{
-
-  TODO Conns w List
-  TODO RData.StairTube
-
-
-  ToDo Segment.MapHitBox List<HitBoxT>->array of PointF
-  ToDo Manu show
-  ToDo перенести функции и типы из GData в CFData
-  ToDo нормальные данные о игроке
-  ToDo оптимизировать создание новых комнат
-  ToDo в Canal кривой пол
-  ToDo разнести серверный и клиенский потоки
   
+  TODO Entity
+  
+  
+  ToDo RData.StairTube
+  ToDo Segment.MapHitBox type List<HitBoxT>->array of PointF
+  ToDo Manu show
+  ToDo Перенести функции и типы из GData в CFData
+  ToDo Нормальные данные о игроке
+  ToDo Оптимизировать создание новых комнат
+  ToDo В Canal кривой пол
+  ToDo Разнести серверный и клиенский потоки
+  ToDo Сохранения
+  ToDo Move Random from PosOk to RarityOk in Canal
   
   ToDo привести все модули к нормальному виду
-   -REData
    -GData
    -TCData
   
@@ -31,15 +31,13 @@
   
   ToDo Static Init
    -EntranceT1
-   -Hall
-   -Canal
 
   ToDo TSeg
    -MapDrawObj
    -MapHitBox
 
   ToDo костыли
-   -TCData.RTG                    #529 ?
+   -TCData.RTG                    #529 ?  $%&@*$%^
    -glObjectData.HBTDOReverse     #568 !  27.11.17
    -glObjectData.glTObject.create #575 ?
    -CFData.HitBoxT.Empty          #577 !  26.11.17
@@ -51,9 +49,6 @@
    -Соеденение текстур
    -Подгрузка и отгрузка текстур
    -Переделать все текстуры комнат
-
-  ToDo Rooms
-   -Canal move Random from PosOk to RarityOk
 
   ToDo Entity
    -Mob

@@ -1,11 +1,13 @@
-﻿type
-  ///тип t1
-  t1=class;
+﻿procedure p1(Self: byte); extensionmethod;
+begin
   
-  t1=class
-    
-  end;
+end;
 
 begin
+  
+  var b: byte;
+  b.p1;
+  
+  var a := Arr&<byte>;
   
 end.

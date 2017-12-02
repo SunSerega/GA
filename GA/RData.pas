@@ -81,13 +81,19 @@ type
     
     {$endregion}
     
-    public function GetFloor(nCamera:CameraT): FloorData; override;
+    private class procedure Init;
+    begin
+      
+    end;
+    
+    
+    public function GetFloor(nCamera: CameraT): FloorData; override;
     begin
       
       var r := -(Rotate(nCamera.X, nCamera.Y, -rot).Y / RW - 0.5);
       
-      if r > 4 then Result := new FloorData(0,new SLine(false,0,RW)) else
-      if r > 1 then Result := new FloorData(rot,new SLine(false,1/3,(r-1)/3*RW));
+      if r > 4 then Result := new FloorData(0, new SLine(false, 0, RW)) else
+      if r > 1 then Result := new FloorData(rot, new SLine(false, 1 / 3, (r - 1) / 3 * RW));
       
     end;
     
@@ -139,104 +145,167 @@ type
     
     private class Pre: SegmentPreData;
     
-    private const TW = 10;
-    
-    private class W_ESpr := Mlt(new PointF[](new PointF(+0.5 * TW, +0.5), new PointF(+(0.5 * TW - 1), +1.0), new PointF(+(0.5 * TW - 1), +(0.5 * TW - 1)), new PointF(+1.0, +(0.5 * TW - 1)), new PointF(+0.5, +0.5 * TW)), RW);
-    private class W_WSpr := Mlt(new PointF[](new PointF(-0.5, +0.5 * TW), new PointF(-1.0, +(0.5 * TW - 1)), new PointF(-(0.5 * TW - 1), +(0.5 * TW - 1)), new PointF(-(0.5 * TW - 1), +1.0), new PointF(-0.5 * TW, +0.5)), RW);
-    private class W_WNpr := Mlt(new PointF[](new PointF(-0.5 * TW, -0.5), new PointF(-(0.5 * TW - 1), -1.0), new PointF(-(0.5 * TW - 1), -(0.5 * TW - 1)), new PointF(-1.0, -(0.5 * TW - 1)), new PointF(-0.5, -0.5 * TW)), RW);
-    private class W_ENpr := Mlt(new PointF[](new PointF(+0.5, -0.5 * TW), new PointF(+1.0, -(0.5 * TW - 1)), new PointF(+(0.5 * TW - 1), -(0.5 * TW - 1)), new PointF(+(0.5 * TW - 1), -1.0), new PointF(+0.5 * TW, -0.5)), RW);
-    
-    private class function f1(p: PointF) := new PPoint(p.X, p.Y, 0);
-    
-    {$region Draw Objects}
-    
-    private class MapDrawObj1 := new glCObject(GL_POLYGON, 0.5, 0.5, 0.5, 1, (new PointF[](new PointF(0, 0), W_ENpr[W_ENpr.Length - 1]) + W_ESpr + W_WSpr + W_WNpr + W_ENpr).ConvertAll(f1));
-    
-    {$endregion}
+    private class TW := 9;//ToDo костыль class -> const
     
     {$region Hitboxes}
     
-    private class W_ENhb := PTHB(W_ENpr);
-    private class W_EShb := PTHB(W_ESpr);
-    private class W_WNhb := PTHB(W_WNpr);
-    private class W_WShb := PTHB(W_WSpr);
+    private class W_NOhb: List<HitBoxT>;
+    private class W_EOhb: List<HitBoxT>;
+    private class W_SOhb: List<HitBoxT>;
+    private class W_WOhb: List<HitBoxT>;
     
-    private class E_Nhb := new HitBoxT(new PointF(-0.5 * RW, -0.5 * TW * RW), new PointF(+0.5 * RW, -0.5 * TW * RW));
-    private class E_Shb := new HitBoxT(new PointF(+0.5 * RW, +0.5 * TW * RW), new PointF(-0.5 * RW, +0.5 * TW * RW));
-    private class E_Whb := new HitBoxT(new PointF(-0.5 * TW * RW, +0.5 * RW), new PointF(-0.5 * TW * RW, -0.5 * RW));
-    private class E_Ehb := new HitBoxT(new PointF(+0.5 * TW * RW, -0.5 * RW), new PointF(+0.5 * TW * RW, +0.5 * RW));
+    private class W_NChb: List<HitBoxT>;
+    private class W_EChb: List<HitBoxT>;
+    private class W_SChb: List<HitBoxT>;
+    private class W_WChb: List<HitBoxT>;
     
-    private class StMapHB := Lst(
-    new HitBoxT(new PointF(-0.5 * TW * RW, -0.5 * TW * RW), new PointF(+0.5 * TW * RW, -0.5 * TW * RW)),
-    new HitBoxT(new PointF(+0.5 * TW * RW, -0.5 * TW * RW), new PointF(+0.5 * TW * RW, +0.5 * TW * RW)),
-    new HitBoxT(new PointF(+0.5 * TW * RW, +0.5 * TW * RW), new PointF(-0.5 * TW * RW, +0.5 * TW * RW)),
-    new HitBoxT(new PointF(-0.5 * TW * RW, +0.5 * TW * RW), new PointF(-0.5 * TW * RW, -0.5 * TW * RW))).Mlt(0.99);
+    private class E_Nhb, E_Shb, E_Whb, E_Ehb: HitBoxT;
+    
+    private class StMapHB: List<HitBoxT>;
     
     {$endregion}
     
     {$region Draw Points}
     
-    private class F_pts := new TPoint[](
-    new TPoint(-0.5 * TW * RW, -0.5 * TW * RW, 0, 0, 0),
-    new TPoint(+0.5 * TW * RW, -0.5 * TW * RW, 0, 1, 0),
-    new TPoint(+0.5 * TW * RW, +0.5 * TW * RW, 0, 1, 1),
-    new TPoint(-0.5 * TW * RW, +0.5 * TW * RW, 0, 0, 1));
+    private class F_pts: array of TPoint;
     
-    private class W_ENpts := new TPoint[](
-    new TPoint(W_ENpr[0].X, W_ENpr[0].Y, +0 * WallHeigth, -sqrt(1.25) / (TW - 2), 0),
-    new TPoint(W_ENpr[0].X, W_ENpr[0].Y, -1 * WallHeigth, -sqrt(1.25) / (TW - 2), 1),
-    new TPoint(W_ENpr[1].X, W_ENpr[1].Y, +0 * WallHeigth, 0.0, 0),
-    new TPoint(W_ENpr[1].X, W_ENpr[1].Y, -1 * WallHeigth, 0.0, 1),
-    new TPoint(W_ENpr[2].X, W_ENpr[2].Y, +0 * WallHeigth, 0.5, 0),
-    new TPoint(W_ENpr[2].X, W_ENpr[2].Y, -1 * WallHeigth, 0.5, 1),
-    new TPoint(W_ENpr[3].X, W_ENpr[3].Y, +0 * WallHeigth, 1.0, 0),
-    new TPoint(W_ENpr[3].X, W_ENpr[3].Y, -1 * WallHeigth, 1.0, 1),
-    new TPoint(W_ENpr[4].X, W_ENpr[4].Y, +0 * WallHeigth, 1 + sqrt(1.25) / (TW - 2), 0),
-    new TPoint(W_ENpr[4].X, W_ENpr[4].Y, -1 * WallHeigth, 1 + sqrt(1.25) / (TW - 2), 1));
+    private class W_ENpts: array of TPoint;
     
-    private class W_ESpts := new TPoint[](
-    new TPoint(W_ESpr[0].X, W_ESpr[0].Y, +0 * WallHeigth, -sqrt(1.25) / (TW - 2), 0),
-    new TPoint(W_ESpr[0].X, W_ESpr[0].Y, -1 * WallHeigth, -sqrt(1.25) / (TW - 2), 1),
-    new TPoint(W_ESpr[1].X, W_ESpr[1].Y, +0 * WallHeigth, 0.0, 0),
-    new TPoint(W_ESpr[1].X, W_ESpr[1].Y, -1 * WallHeigth, 0.0, 1),
-    new TPoint(W_ESpr[2].X, W_ESpr[2].Y, +0 * WallHeigth, 0.5, 0),
-    new TPoint(W_ESpr[2].X, W_ESpr[2].Y, -1 * WallHeigth, 0.5, 1),
-    new TPoint(W_ESpr[3].X, W_ESpr[3].Y, +0 * WallHeigth, 1.0, 0),
-    new TPoint(W_ESpr[3].X, W_ESpr[3].Y, -1 * WallHeigth, 1.0, 1),
-    new TPoint(W_ESpr[4].X, W_ESpr[4].Y, +0 * WallHeigth, 1 + sqrt(1.25) / (TW - 2), 0),
-    new TPoint(W_ESpr[4].X, W_ESpr[4].Y, -1 * WallHeigth, 1 + sqrt(1.25) / (TW - 2), 1));
+    private class W_ESpts: array of TPoint;
     
-    private class W_WNpts := new TPoint[](
-    new TPoint(W_WNpr[0].X, W_WNpr[0].Y, +0 * WallHeigth, -sqrt(1.25) / (TW - 2), 0),
-    new TPoint(W_WNpr[0].X, W_WNpr[0].Y, -1 * WallHeigth, -sqrt(1.25) / (TW - 2), 1),
-    new TPoint(W_WNpr[1].X, W_WNpr[1].Y, +0 * WallHeigth, 0.0, 0),
-    new TPoint(W_WNpr[1].X, W_WNpr[1].Y, -1 * WallHeigth, 0.0, 1),
-    new TPoint(W_WNpr[2].X, W_WNpr[2].Y, +0 * WallHeigth, 0.5, 0),
-    new TPoint(W_WNpr[2].X, W_WNpr[2].Y, -1 * WallHeigth, 0.5, 1),
-    new TPoint(W_WNpr[3].X, W_WNpr[3].Y, +0 * WallHeigth, 1.0, 0),
-    new TPoint(W_WNpr[3].X, W_WNpr[3].Y, -1 * WallHeigth, 1.0, 1),
-    new TPoint(W_WNpr[4].X, W_WNpr[4].Y, +0 * WallHeigth, 1 + sqrt(1.25) / (TW - 2), 0),
-    new TPoint(W_WNpr[4].X, W_WNpr[4].Y, -1 * WallHeigth, 1 + sqrt(1.25) / (TW - 2), 1));
+    private class W_WNpts: array of TPoint;
     
-    private class W_WSpts := new TPoint[](
-    new TPoint(W_WSpr[0].X, W_WSpr[0].Y, +0 * WallHeigth, -sqrt(1.25) / (TW - 2), 0),
-    new TPoint(W_WSpr[0].X, W_WSpr[0].Y, -1 * WallHeigth, -sqrt(1.25) / (TW - 2), 1),
-    new TPoint(W_WSpr[1].X, W_WSpr[1].Y, +0 * WallHeigth, 0.0, 0),
-    new TPoint(W_WSpr[1].X, W_WSpr[1].Y, -1 * WallHeigth, 0.0, 1),
-    new TPoint(W_WSpr[2].X, W_WSpr[2].Y, +0 * WallHeigth, 0.5, 0),
-    new TPoint(W_WSpr[2].X, W_WSpr[2].Y, -1 * WallHeigth, 0.5, 1),
-    new TPoint(W_WSpr[3].X, W_WSpr[3].Y, +0 * WallHeigth, 1.0, 0),
-    new TPoint(W_WSpr[3].X, W_WSpr[3].Y, -1 * WallHeigth, 1.0, 1),
-    new TPoint(W_WSpr[4].X, W_WSpr[4].Y, +0 * WallHeigth, 1 + sqrt(1.25) / (TW - 2), 0),
-    new TPoint(W_WSpr[4].X, W_WSpr[4].Y, -1 * WallHeigth, 1 + sqrt(1.25) / (TW - 2), 1));
-  
+    private class W_WSpts: array of TPoint;
+    
     {$endregion}
-  
+    
+    {$region Draw Objects}
+    
+    private class F_Mdo: glTObject;
+    
+    private class F_Ndo: glObject;
+    private class F_Edo: glObject;
+    private class F_Sdo: glObject;
+    private class F_Wdo: glObject;
+    
+    
+    private class W_NOdo: List<glObject>;
+    private class W_EOdo: List<glObject>;
+    private class W_SOdo: List<glObject>;
+    private class W_WOdo: List<glObject>;
+    
+    private class W_NCdo: glObject;
+    private class W_ECdo: glObject;
+    private class W_SCdo: glObject;
+    private class W_WCdo: glObject;
+    
+    
+    private class M_Mdo: glCObject;
+    
+    private class M_Ndo: glCObject;
+    private class M_Edo: glCObject;
+    private class M_Sdo: glCObject;
+    private class M_Wdo: glCObject;
+    
     {$endregion}
-  
-  
-  private 
-    cN, cE, cS, cW: boolean;
+    
+    {$endregion}
+    
+    private cN, cE, cS, cW: boolean;
+    
+    private class procedure Init;
+    begin
+      
+      var N1pr := Arr(new PointF(-1.0, -0.5 * TW), new PointF(-0.5, -(0.5 * TW + 1))).Mlt(RW);
+      var N2pr := Arr(new PointF(+0.5, -(0.5 * TW + 1)), new PointF(+1.0, -0.5 * TW)).Mlt(RW);
+      
+      var NEpr := Arr(new PointF(+0.5 * TW, -0.5 * TW)).Mlt(RW);
+      
+      var E1pr := Arr(new PointF(+0.5 * TW, -1.0), new PointF(+(0.5 * TW + 1), -0.5)).Mlt(RW);
+      var E2pr := Arr(new PointF(+(0.5 * TW + 1), +0.5), new PointF(+0.5 * TW, +1.0)).Mlt(RW);
+      
+      var ESpr := Arr(new PointF(+0.5 * TW, +0.5 * TW)).Mlt(RW);
+      
+      var S1pr := Arr(new PointF(+1.0, +0.5 * TW), new PointF(+0.5, +(0.5 * TW + 1))).Mlt(RW);
+      var S2pr := Arr(new PointF(-0.5, +(0.5 * TW + 1)), new PointF(-1.0, +0.5 * TW)).Mlt(RW);
+      
+      var SWpr := Arr(new PointF(-0.5 * TW, +0.5 * TW)).Mlt(RW);
+      
+      var W1pr := Arr(new PointF(-0.5 * TW, +1.0), new PointF(-(0.5 * TW + 1), +0.5)).Mlt(RW);
+      var W2pr := Arr(new PointF(-(0.5 * TW + 1), -0.5), new PointF(-0.5 * TW, -1.0)).Mlt(RW);
+      
+      var WNpr := Arr(new PointF(-0.5 * TW, -0.5 * TW)).Mlt(RW);
+      
+      
+      
+      W_NOhb := PTHB(WNpr + N1pr) + PTHB(N2pr + NEpr);
+      W_EOhb := PTHB(NEpr + E1pr) + PTHB(E2pr + ESpr);
+      W_SOhb := PTHB(ESpr + S1pr) + PTHB(S2pr + SWpr);
+      W_WOhb := PTHB(SWpr + W1pr) + PTHB(W2pr + WNpr);
+      
+      W_NChb := PTHB(WNpr+NEpr);
+      W_EChb := PTHB(NEpr+ESpr);
+      W_SChb := PTHB(ESpr+SWpr);
+      W_WChb := PTHB(SWpr+WNpr);
+      
+      E_Nhb := new HitBoxT(N1pr[1], N2pr[0]);AddRandW(E_Nhb.w,Rarity);
+      E_Ehb := new HitBoxT(E1pr[1], E2pr[0]);AddRandW(E_Ehb.w,Rarity);
+      E_Shb := new HitBoxT(S1pr[1], S2pr[0]);AddRandW(E_Shb.w,Rarity);
+      E_Whb := new HitBoxT(W1pr[1], W2pr[0]);AddRandW(E_Whb.w,Rarity);
+      
+      StMapHB := Lst(
+        new HitBoxT(NEpr[0], ESpr[0]),
+        new HitBoxT(ESpr[0], SWpr[0]),
+        new HitBoxT(SWpr[0], WNpr[0]),
+        new HitBoxT(WNpr[0], NEpr[0]));
+      
+      
+      
+      var Mpts := (NEpr + ESpr + SWpr + WNpr).Add3rd(0);
+      
+      var Npts := (N1pr + N2pr).Add3rd(0);
+      var Epts := (E1pr + E2pr).Add3rd(0);
+      var Spts := (S1pr + S2pr).Add3rd(0);
+      var Wpts := (W1pr + W2pr).Add3rd(0);
+      
+      
+      
+      var FTex := RTG.NextFloor(32 * TW, 32 * TW);
+      var W_NETex := RTG.NextWall(128, 128);
+      var W_ESTex := RTG.NextWall(128, 128);
+      var W_SWTex := RTG.NextWall(128, 128);
+      var W_WNTex := RTG.NextWall(128, 128);
+      
+      F_Mdo := new glTObject(GL_QUADS, FTex, Mpts.ConvertAll(p -> new TPoint(p.X, p.Y, p.Z, p.X / TW / RW, p.Y / TW / RW)));
+      
+      F_Ndo := new glTObject(GL_QUADS, FTex, Npts.ConvertAll(p -> new TPoint(p.X, p.Y, p.Z, p.X / TW / RW, p.Y / TW / RW)));
+      F_Edo := new glTObject(GL_QUADS, FTex, Epts.ConvertAll(p -> new TPoint(p.X, p.Y, p.Z, p.X / TW / RW, p.Y / TW / RW)));
+      F_Sdo := new glTObject(GL_QUADS, FTex, Spts.ConvertAll(p -> new TPoint(p.X, p.Y, p.Z, p.X / TW / RW, p.Y / TW / RW)));
+      F_Wdo := new glTObject(GL_QUADS, FTex, Wpts.ConvertAll(p -> new TPoint(p.X, p.Y, p.Z, p.X / TW / RW, p.Y / TW / RW)));
+      
+      
+      var w: real;
+      
+      W_NOdo := HBTDO(0, w, W_WNTex, PTHB(WNpr + N1pr)) + HBTDOReverse(0, w, W_NETex, PTHB(N2pr + NEpr));
+      W_EOdo := HBTDO(0, w, W_NETex, PTHB(NEpr + E1pr)) + HBTDOReverse(0, w, W_ESTex, PTHB(E2pr + ESpr));
+      W_SOdo := HBTDO(0, w, W_ESTex, PTHB(ESpr + S1pr)) + HBTDOReverse(0, w, W_SWTex, PTHB(S2pr + SWpr));
+      W_WOdo := HBTDO(0, w, W_SWTex, PTHB(SWpr + W1pr)) + HBTDOReverse(0, w, W_WNTex, PTHB(W2pr + WNpr));
+      
+      W_NCdo := HBTDO(0, w, W_WNTex, PTHB(WNpr + NEpr)).First;
+      W_ECdo := HBTDO(0, w, W_NETex, PTHB(NEpr + ESpr)).First;
+      W_SCdo := HBTDO(0, w, W_ESTex, PTHB(ESpr + SWpr)).First;
+      W_WCdo := HBTDO(0, w, W_SWTex, PTHB(SWpr + WNpr)).First;
+      
+      
+      M_Mdo := new glCObject(GL_QUADS, 0.5, 0.5, 0.5, 1, Mpts);
+      
+      M_Ndo := new glCObject(GL_QUADS, 0.5, 0.5, 0.5, 1, Npts);
+      M_Edo := new glCObject(GL_QUADS, 0.5, 0.5, 0.5, 1, Epts);
+      M_Sdo := new glCObject(GL_QUADS, 0.5, 0.5, 0.5, 1, Spts);
+      M_Wdo := new glCObject(GL_QUADS, 0.5, 0.5, 0.5, 1, Wpts);
+      
+    end;
+    
     
     public const Name = 'GA.Hall';
     
@@ -251,197 +320,89 @@ type
       Pre.ZMax := 0;
       Result := PreInit(Pre, nC.Whose.DangeonIn, nC, (new ConnectionT[](
         new ConnectionT(0, E_Nhb, nil, nil),
+        new ConnectionT(0, E_Ehb, nil, nil),
         new ConnectionT(0, E_Shb, nil, nil),
-        new ConnectionT(0, E_Whb, nil, nil),
-        new ConnectionT(0, E_Ehb, nil, nil))).ToList, StMapHB.ToList);
+        new ConnectionT(0, E_Whb, nil, nil))).ToList, StMapHB.ToList);
       
     end;
     
     public constructor(var nC: ConnectionT);
     begin
       
-      cN := true;
-      cE := true;
-      cS := true;
-      cW := true;
+      (cN,cE,cS,cW) := (true,true,true,true);
       
-      Init(Pre, nC, W_ENhb + W_EShb + W_WNhb + W_WShb, 5, 1);
+      Init(Pre, nC, W_NOhb + W_EOhb + W_SOhb + W_WOhb, 5 + 16, 5);
       
-      DrawObj.Add(new glTObject(GL_QUAD_STRIP, RTG.NextWall(128 * (TW - 2), 128), W_ENpts));
-      DrawObj.Add(new glTObject(GL_QUAD_STRIP, RTG.NextWall(128 * (TW - 2), 128), W_ESpts));
-      DrawObj.Add(new glTObject(GL_QUAD_STRIP, RTG.NextWall(128 * (TW - 2), 128), W_WSpts));
-      DrawObj.Add(new glTObject(GL_QUAD_STRIP, RTG.NextWall(128 * (TW - 2), 128), W_WNpts));
-      DrawObj.Add(new glTObject(GL_QUADS, RTG.NextFloor(32 * TW, 32 * TW), F_pts));
+      for var i: byte := 0 to 3 do Connections[i].lbl := i;
       
-      MapDrawObj.Add(MapDrawObj1);
+      
+      
+      DrawObj.Add(F_Mdo);
+      
+      DrawObj.Add(F_Ndo);
+      DrawObj.Add(F_Edo);
+      DrawObj.Add(F_Wdo);
+      DrawObj.Add(F_Sdo);
+      
+      
+      DrawObj.AddRange(W_NOdo);
+      DrawObj.AddRange(W_EOdo);
+      DrawObj.AddRange(W_SOdo);
+      DrawObj.AddRange(W_WOdo);
+      
+      
+      
+      MapDrawObj.Add(M_Mdo);
+      
+      MapDrawObj.Add(M_Ndo);
+      MapDrawObj.Add(M_Edo);
+      MapDrawObj.Add(M_Sdo);
+      MapDrawObj.Add(M_Wdo);
       
     end;
     
-    
     public procedure CloseWay(C: ConnectionT); override;
     begin
-      if not Connections.Remove(C) then
-        raise new System.ArgumentException('No such connection of this room');
-      case Round((C.rot - rot) / Pi * 2) and 3 of
-        0: cN := false;
-        1: cE := false;
-        2: cS := false;
-        3: cW := false;
+      if not Connections.Remove(C) then raise new System.ArgumentException('No such connection of this room');
+      
+      case byte(C.lbl) of
+        0:
+          begin
+            cN := false;
+            WallHitBox := ((cN?W_NOhb:W_NChb) + (cE?W_EOhb:W_EChb) + (cS?W_SOhb:W_SChb) + (cW?W_WOhb:W_WChb)).Rotate(rot);
+            DrawObj.RemoveRange(W_NOdo);
+            DrawObj.Add(W_NCdo);
+            DrawObj.Remove(F_Ndo);
+            MapDrawObj.Remove(M_Ndo);
+          end;
+        1:
+          begin
+            cE := false;
+            WallHitBox := ((cN?W_NOhb:W_NChb) + (cE?W_EOhb:W_EChb) + (cS?W_SOhb:W_SChb) + (cW?W_WOhb:W_WChb)).Rotate(rot);
+            DrawObj.RemoveRange(W_EOdo);
+            DrawObj.Add(W_ECdo);
+            DrawObj.Remove(F_Edo);
+            MapDrawObj.Remove(M_Edo);
+          end;
+        2:
+          begin
+            cS := false;
+            WallHitBox := ((cN?W_NOhb:W_NChb) + (cE?W_EOhb:W_EChb) + (cS?W_SOhb:W_SChb) + (cW?W_WOhb:W_WChb)).Rotate(rot);
+            DrawObj.RemoveRange(W_SOdo);
+            DrawObj.Add(W_SCdo);
+            DrawObj.Remove(F_Sdo);
+            MapDrawObj.Remove(M_Sdo);
+          end;
+        3:
+          begin
+            cW := false;
+            WallHitBox := ((cN?W_NOhb:W_NChb) + (cE?W_EOhb:W_EChb) + (cS?W_SOhb:W_SChb) + (cW?W_WOhb:W_WChb)).Rotate(rot);
+            DrawObj.RemoveRange(W_WOdo);
+            DrawObj.Add(W_WCdo);
+            DrawObj.Remove(F_Wdo);
+            MapDrawObj.Remove(M_Wdo);
+          end;
       end;
-      var Res: glCObject;
-      if MapDrawObj[0] = MapDrawObj1 then Res := new glCObject(MapDrawObj1.mode, MapDrawObj1.cr, MapDrawObj1.cg, MapDrawObj1.cb, MapDrawObj1.ca, new PPoint[0]) else Res := MapDrawObj[0];
-      var pts := new List<PPoint>(MapDrawObj[0].pts.Count);
-      pts.Add(new PPoint(0, 0, 0));
-      var nHB := new List<HitBoxT>(WallHitBox.Count);
-      var dNE := new List<TPoint>(10);
-      var dSE := new List<TPoint>(10);
-      var dSW := new List<TPoint>(10);
-      var dNW := new List<TPoint>(10);
-      var MoveTX: TPoint->TPoint := o -> new TPoint(o.X, o.Y, o.Z, 2, o.TY);
-      
-      
-      pts.Add(new PPoint(W_ENpr[2].X, W_ENpr[2].Y, 0));
-      
-      if cE then
-      begin
-        nHB.Add(W_ENhb[2]); pts.Add(new PPoint(W_ENpr[3].X, W_ENpr[3].Y, 0));
-        nHB.Add(W_ENhb[3]); pts.Add(new PPoint(W_ENpr[4].X, W_ENpr[4].Y, 0));
-        nHB.Add(W_EShb[0]); pts.Add(new PPoint(W_ESpr[0].X, W_ESpr[0].Y, 0));
-        nHB.Add(W_EShb[1]); pts.Add(new PPoint(W_ESpr[1].X, W_ESpr[1].Y, 0));
-        
-        dNE.Add(W_ENpts[9]);
-        dNE.Add(W_ENpts[8]);
-        dNE.Add(W_ENpts[7]);
-        dNE.Add(W_ENpts[6]);
-        
-        dSE.Add(W_ESpts[0]);
-        dSE.Add(W_ESpts[1]);
-        dSE.Add(W_ESpts[2]);
-        dSE.Add(W_ESpts[3]);
-      end else
-      begin
-        nHB.Add(new HitBoxT(W_ENpr[2], W_ESpr[2]));
-        
-        dNE.Add(MoveTX(W_ESpts[5]));
-        dNE.Add(MoveTX(W_ESpts[4]));
-      end;
-      
-      pts.Add(new PPoint(W_ESpr[2].X, W_ESpr[2].Y, 0));
-      
-      dNE.Add(W_ENpts[5]);
-      dNE.Add(W_ENpts[4]);
-      
-      dSE.Add(W_ESpts[4]);
-      dSE.Add(W_ESpts[5]);
-      
-      if cS then
-      begin
-        nHB.Add(W_EShb[2]); pts.Add(new PPoint(W_ESpr[3].X, W_ESpr[3].Y, 0));
-        nHB.Add(W_EShb[3]); pts.Add(new PPoint(W_ESpr[4].X, W_ESpr[4].Y, 0));
-        nHB.Add(W_WShb[0]); pts.Add(new PPoint(W_WSpr[0].X, W_WSpr[0].Y, 0));
-        nHB.Add(W_WShb[1]); pts.Add(new PPoint(W_WSpr[1].X, W_WSpr[1].Y, 0));
-        
-        dSE.Add(W_ESpts[6]);
-        dSE.Add(W_ESpts[7]);
-        dSE.Add(W_ESpts[8]);
-        dSE.Add(W_ESpts[9]);
-        
-        dSW.Add(W_WSpts[0]);
-        dSW.Add(W_WSpts[1]);
-        dSW.Add(W_WSpts[2]);
-        dSW.Add(W_WSpts[3]);
-      end else
-      begin
-        nHB.Add(new HitBoxT(W_ESpr[2], W_WSpr[2]));
-        
-        dSE.Add(MoveTX(W_WSpts[4]));
-        dSE.Add(MoveTX(W_WSpts[5]));
-      end;
-      
-      pts.Add(new PPoint(W_WSpr[2].X, W_WSpr[2].Y, 0));
-      
-      dSW.Add(W_WSpts[4]);
-      dSW.Add(W_WSpts[5]);
-      
-      if cW then
-      begin
-        nHB.Add(W_WShb[2]); pts.Add(new PPoint(W_WSpr[3].X, W_WSpr[3].Y, 0));
-        nHB.Add(W_WShb[3]); pts.Add(new PPoint(W_WSpr[4].X, W_WSpr[4].Y, 0));
-        nHB.Add(W_WNhb[0]); pts.Add(new PPoint(W_WNpr[0].X, W_WNpr[0].Y, 0));
-        nHB.Add(W_WNhb[1]); pts.Add(new PPoint(W_WNpr[1].X, W_WNpr[1].Y, 0));
-        
-        dSW.Add(W_WSpts[6]);
-        dSW.Add(W_WSpts[7]);
-        dSW.Add(W_WSpts[8]);
-        dSW.Add(W_WSpts[9]);
-        
-        dNW.Add(W_WNpts[0]);
-        dNW.Add(W_WNpts[1]);
-        dNW.Add(W_WNpts[2]);
-        dNW.Add(W_WNpts[3]);
-      end else
-      begin
-        nHB.Add(new HitBoxT(W_WSpr[2], W_WNpr[2]));
-        
-        dSW.Add(MoveTX(W_WNpts[4]));
-        dSW.Add(MoveTX(W_WNpts[5]));
-      end;
-      
-      pts.Add(new PPoint(W_WNpr[2].X, W_WNpr[2].Y, 0));
-      
-      dNW.Add(W_WNpts[4]);
-      dNW.Add(W_WNpts[5]);
-      
-      if cN then
-      begin
-        nHB.Add(W_WNhb[2]); pts.Add(new PPoint(W_WNpr[3].X, W_WNpr[3].Y, 0));
-        nHB.Add(W_WNhb[3]); pts.Add(new PPoint(W_WNpr[4].X, W_WNpr[4].Y, 0));
-        nHB.Add(W_ENhb[0]); pts.Add(new PPoint(W_ENpr[0].X, W_ENpr[0].Y, 0));
-        nHB.Add(W_ENhb[1]); pts.Add(new PPoint(W_ENpr[1].X, W_ENpr[1].Y, 0));
-        
-        dNW.Add(W_WNpts[6]);
-        dNW.Add(W_WNpts[7]);
-        dNW.Add(W_WNpts[8]);
-        dNW.Add(W_WNpts[9]);
-        
-        dNE.Add(W_ENpts[3]);
-        dNE.Add(W_ENpts[2]);
-        dNE.Add(W_ENpts[1]);
-        dNE.Add(W_ENpts[0]);
-      end else
-      begin
-        nHB.Add(new HitBoxT(W_WNpr[2], W_ENpr[2]));
-        
-        dNW.Add(MoveTX(W_ENpts[4]));
-        dNW.Add(MoveTX(W_ENpts[5]));
-      end;
-      
-      pts.Add(new PPoint(W_ENpr[2].X, W_ENpr[2].Y, 0));
-      
-      
-      Res.pts := pts.ToArray;
-      MapDrawObj[0] := Res;
-      WallHitBox := nHB.Rotate(rot);
-      
-      DrawObj[0] := new glTObject(GL_QUAD_STRIP, glTObject(DrawObj[0]).Tex, dNE);
-      DrawObj[1] := new glTObject(GL_QUAD_STRIP, glTObject(DrawObj[1]).Tex, dSE);
-      DrawObj[2] := new glTObject(GL_QUAD_STRIP, glTObject(DrawObj[2]).Tex, dSW);
-      DrawObj[3] := new glTObject(GL_QUAD_STRIP, glTObject(DrawObj[3]).Tex, dNW);
-      
-      //DrawObj[0] := new glTObject(GL_QUAD_STRIP, glTObject(DrawObj[0]).Tex, new TPoint[0]);
-      //DrawObj[1] := new glTObject(GL_QUAD_STRIP, glTObject(DrawObj[1]).Tex, dSE.ToArray);
-      //DrawObj[2] := new glTObject(GL_QUAD_STRIP, glTObject(DrawObj[2]).Tex, new TPoint[0]);
-      //DrawObj[3] := new glTObject(GL_QUAD_STRIP, glTObject(DrawObj[3]).Tex, new TPoint[0]);
-      
-      //DrawObj[0] := new glCObject(GL_QUAD_STRIP, 1,0,0,1, dNE.ConvertAll(p->new PPoint(p.X,p.Y,p.Z)).ToArray);
-      //DrawObj[1] := new glCObject(GL_QUAD_STRIP, 0,1,0,1, dSE.ConvertAll(p->new PPoint(p.X,p.Y,p.Z)).ToArray);
-      //DrawObj[2] := new glCObject(GL_QUAD_STRIP, 0,0,1,1, dSW.ConvertAll(p->new PPoint(p.X,p.Y,p.Z)).ToArray);
-      //DrawObj[3] := new glCObject(GL_QUAD_STRIP, 1,1,0,1, dNW.ConvertAll(p->new PPoint(p.X,p.Y,p.Z)).ToArray);
-      
-      //DrawObj[0] := new glCObject(GL_QUAD_STRIP, 1,0,0,1, dNE.Rotate(-self.rot).ConvertAll(p->new PPoint(p.X,p.Y,p.Z)).ToArray);
-      //DrawObj[1] := new glCObject(GL_QUAD_STRIP, 0,1,0,1, dSE.Rotate(-self.rot).ConvertAll(p->new PPoint(p.X,p.Y,p.Z)).ToArray);
-      //DrawObj[2] := new glCObject(GL_QUAD_STRIP, 0,0,1,1, dSW.Rotate(-self.rot).ConvertAll(p->new PPoint(p.X,p.Y,p.Z)).ToArray);
-      //DrawObj[3] := new glCObject(GL_QUAD_STRIP, 1,1,0,1, dNW.Rotate(-self.rot).ConvertAll(p->new PPoint(p.X,p.Y,p.Z)).ToArray);
       
     end;
     
@@ -474,7 +435,7 @@ type
     HB1, HB2: HitBoxT;
     p1, p2: PointF;
     LD1, LD2: SLine;
-    SlopeA:Single;
+    SlopeA: Single;
     
     public const Name = 'GA.Canal';
     
@@ -528,7 +489,7 @@ type
         CF2 := Conns2.Rand;
         if CF2.Whose.ClassName = 'GA.Canal' then exit;
       end else
-        CF2 := new ConnectionT(dZ, new HitBoxT(nC.w, Pi + nC.rot + Rand(Pi / 6), dXY), nil, nil);
+        CF2 := new ConnectionT(dZ, new HitBoxT(GetRandW, Pi + nC.rot + Rand(Pi / 6), dXY), nil, nil);
       
       if (new HitBoxT(CF2.HB.Senter, nC.HB.Senter)).w < ML then exit;
       
@@ -579,7 +540,7 @@ type
         p2 := HB2.Senter;
         LD2 := SLine.LineData(HB1.p1, HB1.p2);
         LD1 := LD2.Perpend;
-        SlopeA := nZ/sqrt(sqr(p1.X-p2.X)+sqr(p1.Y-p2.Y));
+        SlopeA := nZ / sqrt(sqr(p1.X - p2.X) + sqr(p1.Y - p2.Y));
         
       end;
       Init(Pre, nC, W_Ehb + W_Whb, 2, 1);
@@ -642,14 +603,14 @@ type
     end;
     
     
-    public function GetFloor(nCamera:CameraT): FloorData; override;
+    public function GetFloor(nCamera: CameraT): FloorData; override;
     begin
       if nZ = 0 then exit;
       var pX := nCamera.X;
       var pY := nCamera.Y;
       var pt := new PointF(pX, pY);
       if OnLeft(HB1.p1, HB1.p2, pt) then exit else
-      if OnLeft(HB2.p1, HB2.p2, pt) then Result := new FloorData(0,new SLine(false,0,nZ * RW)) else
+      if OnLeft(HB2.p1, HB2.p2, pt) then Result := new FloorData(0, new SLine(false, 0, nZ * RW)) else
       begin
         var Res := Isept(LD1, LD2);
         LD2.BLineData(pt);
@@ -663,7 +624,7 @@ type
             Swap(Z1, Z2);
             Swap(pMin, pMax);
           end;
-          Result := new FloorData(rot,new SLine(false,SlopeA,(Z1 + (Z2 - Z1) * (Res.Y - pMin) / (pMax - pMin)) * RW));
+          Result := new FloorData(rot, new SLine(false, SlopeA, (Z1 + (Z2 - Z1) * (Res.Y - pMin) / (pMax - pMin)) * RW));
           
         end else begin
           
@@ -673,7 +634,7 @@ type
             Swap(Z1, Z2);
             Swap(pMin, pMax);
           end;
-          Result := new FloorData(rot,new SLine(false,SlopeA,(Z1 + (Z2 - Z1) * (Res.X - pMin) / (pMax - pMin)) * RW));
+          Result := new FloorData(rot, new SLine(false, SlopeA, (Z1 + (Z2 - Z1) * (Res.X - pMin) / (pMax - pMin)) * RW));
           
         end;
       end;
@@ -802,6 +763,10 @@ type
       E_Ehb := new HitBoxT(Epts1[1], Epts2[0]);
       
       E_Nhb := new HitBoxT(Npts[0], Npts[1]);
+      
+      AddRandW(E_Whb.w,Rarity);
+      AddRandW(E_Ehb.w,Rarity);
+      AddRandW(E_Nhb.w,Rarity);
       
       
       var MHBP := new PointF[7 + 1];
@@ -947,38 +912,38 @@ type
     
     public procedure CloseWay(C: ConnectionT); override;
     begin
-      if Connections.Remove(C) then
-      begin
-        case byte(C.lbl) of
-          1:
-            begin
-              var HB := Rotate(C.HB - new PointF(X, Y), -rot);
-              DrawObj.Add(new glTObject(GL_QUADS, WPWTex, new TPoint[](
+      
+      if not Connections.Remove(C) then raise new System.ArgumentException('No such connection of this room');
+      
+      case byte(C.lbl) of
+        1:
+          begin
+            var HB := Rotate(C.HB - new PointF(X, Y), -rot);
+            DrawObj.Add(new glTObject(GL_QUADS, WPWTex, new TPoint[](
                 new TPoint(HB.p1.X, HB.p1.Y, (C.Z - Z - 1) * RW, 0, 0),
                 new TPoint(HB.p2.X, HB.p2.Y, (C.Z - Z - 1) * RW, 1, 0),
                 new TPoint(HB.p2.X, HB.p2.Y, (C.Z - Z - 0) * RW, 1, 1),
                 new TPoint(HB.p1.X, HB.p1.Y, (C.Z - Z - 0) * RW, 0, 1))));
-              WallHitBox.Add(C.HB - new PointF(X, Y));
-            end;
-          0:
-            begin
-              Wc := false;
-              DrawObj.Remove(F_Wdo);
-              foreach var o in W_WOdo do DrawObj.Remove(o);
-              foreach var o in W_WCdo do DrawObj.Add(o);
-              WallHitBox := (W_Shb + (Ec ? W_EOhb : W_EChb) + W_WChb).Rotate(rot);
-            end;
-          2:
-            begin
-              Ec := false;
-              DrawObj.Remove(F_Edo);
-              foreach var o in W_EOdo do DrawObj.Remove(o);
-              foreach var o in W_ECdo do DrawObj.Add(o);
-              WallHitBox := (W_Shb + W_EChb + (Wc ? W_WOhb : W_WChb)).Rotate(rot);
-            end;
-        end;
-      end else
-        raise new System.ArgumentException('No such connection of this room');
+            WallHitBox.Add(C.HB - new PointF(X, Y));
+          end;
+        0:
+          begin
+            Wc := false;
+            DrawObj.Remove(F_Wdo);
+            foreach var o in W_WOdo do DrawObj.Remove(o);
+            foreach var o in W_WCdo do DrawObj.Add(o);
+            WallHitBox := (W_Shb + (Ec ? W_EOhb : W_EChb) + W_WChb).Rotate(rot);
+          end;
+        2:
+          begin
+            Ec := false;
+            DrawObj.Remove(F_Edo);
+            foreach var o in W_EOdo do DrawObj.Remove(o);
+            foreach var o in W_ECdo do DrawObj.Add(o);
+            WallHitBox := (W_Shb + W_EChb + (Wc ? W_WOhb : W_WChb)).Rotate(rot);
+          end;
+      end;
+      
     end;
     
     public function ClassName: string; override := Name;
@@ -990,6 +955,7 @@ type
     {$region Static Data}
     
     private class TW := 5 * RW;//ToDo костыль! class->const
+    private class MinW: word := Round(TW / 2);
     
     private class Pre: SegmentPreData;
     
@@ -1054,6 +1020,7 @@ type
     public class function PosOk(var nC: ConnectionT): boolean;
     begin
       
+      if nC.w < MinW then exit;
       w := nC.HB.w / 2;
       E_Shb := new HitBoxT(new PointF(+w, 0), new PointF(-w, 0));
       Pre.ZMin := 0;
@@ -1259,6 +1226,7 @@ end;
 
 begin
   
+  Hall.Init;
   TSeg.Init;
   Treasury.Init;
   StairTube.Init;

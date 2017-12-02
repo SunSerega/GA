@@ -198,9 +198,9 @@ type
   HitBoxT = record
     p1, p2: PointF ;
     
-    class function Empty:=default(HitBoxT);//ToDo костыль! 
+    class function Empty := default(HitBoxT);//ToDo костыль! 
     
-    function rot:real := CFData.ArcTg(p2.X - p1.X, p2.Y - p1.Y) ;
+    function rot: real := CFData.ArcTg(p2.X - p1.X, p2.Y - p1.Y) ;
     
     function w := sqrt(sqr(p2.X - p1.X) + sqr(p2.Y - p1.Y)) ;
     
@@ -590,6 +590,25 @@ end;
 
 function Rand<T>(Self: sequence of T); extensionmethod := Self.ElementAt(Random(Self.Count));
 
+function operator+<T>(l: List<T>; a: T): List<T>; extensionmethod;
+begin
+  Result := new List<T>(l.Count + 1);
+  Result.AddRange(l);
+  Result.Add(a);
+end;
+
+function operator+<T>(a: T; l: List<T>): List<T>; extensionmethod;
+begin
+  Result := new List<T>(l.Count + 1);
+  Result.Add(a);
+  Result.AddRange(l);
+end;
+
+procedure RemoveRange<T>(Self,l:List<T>);extensionmethod;
+begin
+  foreach var o in l do Self.Remove(o);
+end;
+
 {$endregion}
 
 {$endregion}
@@ -687,66 +706,66 @@ end;
 function OnLeft(p1, p2, pt: PointF) := OnLeft(p1, p2, pt, SLine.LineData(p1, p2));
 
 procedure LineToPts(HB: HitBoxT; CellW: word; var nl: List<Point>);
+begin
+  
+  var l := nl;
+  
+  var AddToL: procedure(p: PointF) := p -> begin
+    
+    var np := new Point(Round(p.X / CellW), Round(p.Y / CellW));
+    if not l.Contains(np) then l.Add(np);
+    
+  end;
+  
+  var x1 := HB.p1.X;var x2 := HB.p2.X;
+  var y1 := HB.p1.Y;var y2 := HB.p2.Y;
+  
+  var dx := x2 - x1;
+  var dy := y2 - y1;
+  
+  if (dx <> 0) or (dy <> 0) then
+  begin
+    
+    var XYSwaped := abs(dx) < abs(dy);
+    if XYSwaped then
     begin
-      
-      var l := nl;
-      
-      var AddToL: procedure(p: PointF) := p -> begin
-        
-        var np := new Point(Round(p.X / CellW), Round(p.Y / CellW));
-        if not l.Contains(np) then l.Add(np);
-        
-      end;
-      
-      var x1 := HB.p1.X;var x2 := HB.p2.X;
-      var y1 := HB.p1.Y;var y2 := HB.p2.Y;
-      
-      var dx := x2 - x1;
-      var dy := y2 - y1;
-      
-      if (dx <> 0) or (dy <> 0) then
-      begin
-        
-        var XYSwaped := abs(dx) < abs(dy);
-        if XYSwaped then
-        begin
-          Swap(dx, dy);
-          Swap(x1, y1);
-          Swap(x2, y2);
-        end;
-        
-        if dx < 0 then
-        begin
-          Swap(x1, x2);
-          Swap(y1, y2);
-          dx := -dx;
-          dy := -dy;
-        end;
-        
-        if XYSwaped then begin
-          AddToL(new PointF(y1, x1));
-          AddToL(new PointF(y2, x2));
-        end else begin
-          AddToL(new PointF(x1, y1));
-          AddToL(new PointF(x2, y2));
-        end;
-        
-        var a := dy / dx;
-        
-        for var x := Round(x1) to Round(x2) - 1 do
-          if XYSwaped then begin
-            AddToL(new PointF((x + 0.5 - x1) * a + y1, x + 0));
-            AddToL(new PointF((x + 0.5 - x1) * a + y1, x + 1));
-          end else begin
-            AddToL(new PointF(x + 0, (x + 0.5 - x1) * a + y1));
-            AddToL(new PointF(x + 1, (x + 0.5 - x1) * a + y1));
-          end;
-        
-      end else
-        AddToL(HB.p1);
-      
-      nl := l;
+      Swap(dx, dy);
+      Swap(x1, y1);
+      Swap(x2, y2);
     end;
+    
+    if dx < 0 then
+    begin
+      Swap(x1, x2);
+      Swap(y1, y2);
+      dx := -dx;
+      dy := -dy;
+    end;
+    
+    if XYSwaped then begin
+      AddToL(new PointF(y1, x1));
+      AddToL(new PointF(y2, x2));
+    end else begin
+      AddToL(new PointF(x1, y1));
+      AddToL(new PointF(x2, y2));
+    end;
+    
+    var a := dy / dx;
+    
+    for var x := Round(x1) to Round(x2) - 1 do
+      if XYSwaped then begin
+        AddToL(new PointF((x + 0.5 - x1) * a + y1, x + 0));
+        AddToL(new PointF((x + 0.5 - x1) * a + y1, x + 1));
+      end else begin
+        AddToL(new PointF(x + 0, (x + 0.5 - x1) * a + y1));
+        AddToL(new PointF(x + 1, (x + 0.5 - x1) * a + y1));
+      end;
+    
+  end else
+    AddToL(HB.p1);
+  
+  nl := l;
+end;
 
 {$endregion}
 

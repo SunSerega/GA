@@ -12,7 +12,7 @@ type
   
   {$region Dop Types}
   
-  ///Тип данных которые сохраняются между PreInit и Init чтоб не вычислять их с 0 2 раза
+  ///Тип данных которые сохраняются между PreInit и Init чтоб не вычислять их с нуля 2 раза
   SegmentPreData = record
     X, Y: real;
     Z, ZMin, ZMax: smallint;
@@ -57,6 +57,19 @@ type
     end;
   
   end;
+  ///Запись для Segment.WUsed
+  WidthData = record
+    
+    w: word;
+    Rarity: real;
+    
+    constructor(w: word; Rarity: real);
+    begin
+      self.w := w;
+      self.Rarity := Rarity;
+    end;
+  
+  end;
   
   {$endregion}
   
@@ -90,20 +103,24 @@ type
   
   end;
   //ToDo Init stTick stDraw Items(draw parts, ect)
-  ///Тип всего динамичного(мобы, выщи валяющиеся на полу, предметы декора)
+  ///Тип всего динамичного(мобы, вещи валяющиеся на полу, предметы декора)
   Entity = abstract class
   
   public 
-    Pos, Vel: PointF;
+    X, Y, Z: Single;
+    dX, dY, dZ: Single;
     
+    rot: Single;
+    RoomIn: Segment;
+    DangeonIn: Dangeon;
+    DrawObj: List<glObject>;//        +XYZ +rot
+    
+    ///Процедура тика от данжа. Требует переопределения в дочереных классах
     public procedure Tick; abstract;
-    
-    public procedure Draw; abstract;
-    
-    protected procedure Init; virtual;
-    begin
-      
-    end;
+    ///Рисует энтити
+    public procedure Draw; virtual;
+    ///Выполняет основную инициализацию
+    protected procedure Init(Room: Segment; X, Y, Z: Single;DrawObjMinCount:integer;rot: real := Random*2*Pi); virtual;
   
   end;
   ///Базовый тип комнат
@@ -121,11 +138,11 @@ type
     
     class StRarity := Dict(
     
-    ('GA.Hall',  30),
-    ('GA.Canal',   3),
-    ('GA.TSeg',  45),
-    ('GA.Treasury', 100),
-    ('GA.StairTube',   0),
+    ('GA.Hall',        30),
+    ('GA.Canal',       10),
+    ('GA.TSeg',       110),
+    ('GA.Treasury',   100),
+    ('GA.StairTube',    0),
     
     ('Void.SegVoid',   0)
     
@@ -133,16 +150,18 @@ type
     
     class StССRarity := Dict(
   
-    ('GA.EntranceT1', (0.0,  true)),  
-    ('GA.Hall', (1.5, false)),
-    ('GA.Canal', (0.0,  true)),
-    ('GA.TSeg', (1.5, false)),
-    ('GA.Treasury', (1.5, false)),
-    ('GA.StairTube', (1.5, false)),
+    ('GA.EntranceT1',   (0.0,  true)),  
+    ('GA.Hall',         (1.5, false)),
+    ('GA.Canal',        (0.0,  true)),
+    ('GA.TSeg',         (1.5, false)),
+    ('GA.Treasury',     (1.5, false)),
+    ('GA.StairTube',    (1.5, false)),
     
-    ('Void.SegVoid', (0.0, false))
+    ('Void.SegVoid',    (1.5, false))
     
     );
+    
+    class WUsed := new List<WidthData>;
   
   public 
     X, Y: real;
@@ -172,6 +191,12 @@ type
     public function GetAllHB: List<HitBoxT>; virtual;
     ///Возвращает ссылку на список соединений которые ожидают генерации который храница в данже
     public function RoomWait: List<ConnectionT>;
+    ///Добавляет ширину w к списку WUsed с вероятностью выбора через GetRandW Rarity
+    protected class procedure AddRandW(w: word; Rarity: real);
+    ///Добавляет ширину w к списку WUsed с вероятностью выбора через GetRandW Rarity, округляя w
+    protected class procedure AddRandW(w, Rarity: real);
+    ///Возвращает случайную ширину соединения которая может быть использовано другими комнатами
+    protected class function GetRandW: word;
     
     {$endregion}
     
@@ -225,7 +250,7 @@ type
   
   end;
   ///Стандартный тип для данжа
-  Dangeon = sealed class
+  Dangeon = class
   
   {$region var}
   
@@ -277,10 +302,16 @@ type
     {$endregion}
   
   end;
+  ///Тип мобов
+  Mob = abstract class(Entity)
+    
+    
+    
+  end;
 
 implementation
 
-///Float To Integer thru pointer
+///[DEBAG] Float To Integer thru pointer
 function fti(s: Single) := PInteger(pointer(@s))^; 
 
 {$region extensionmethod}
@@ -346,6 +377,18 @@ function Segment.GetFloor(nCamera: CameraT) := default(FloorData);
 function Segment.GetAllHB := WallHitBox + Connections.Where(C -> C.Empty).ToList.ConvertAll(C -> C.HB - new PointF(X, Y));
 
 function Segment.RoomWait := self.DangeonIn.RoomWait;
+
+class procedure Segment.AddRandW(w: word; Rarity: real) := WUsed.Add(new WidthData(w, Rarity));
+
+class procedure Segment.AddRandW(w, Rarity: real) := WUsed.Add(new WidthData(Round(w), Rarity));
+
+class function Segment.GetRandW: word;
+begin
+  var dat := WUsed.Rand;
+  while dat.Rarity * Random > 1 do
+    dat := WUsed.Rand;
+  Result := dat.w;
+end;
 
 {$endregion}
 
@@ -446,17 +489,17 @@ end;
 
 procedure Segment.CloseWay(C: ConnectionT);
 begin
-  if Connections.Remove(C) then
-  begin
-    var HB := Rotate(C.HB - new PointF(X, Y), -rot);
-    DrawObj.Add(new glTObject(GL_QUADS, WPWTex, new TPoint[](
-          new TPoint(HB.p1.X, HB.p1.Y, (C.Z - Z - 1) * RW, 0, 0),
-          new TPoint(HB.p2.X, HB.p2.Y, (C.Z - Z - 1) * RW, 1, 0),
-          new TPoint(HB.p2.X, HB.p2.Y, (C.Z - Z - 0) * RW, 1, 1),
-          new TPoint(HB.p1.X, HB.p1.Y, (C.Z - Z - 0) * RW, 0, 1))));
-    WallHitBox.Add(C.HB - new PointF(X, Y));
-  end else
-    raise new System.ArgumentException('No such connection of this room');
+  
+  if not Connections.Remove(C) then raise new System.ArgumentException('No such connection of this room');
+  
+  var HB := Rotate(C.HB - new PointF(X, Y), -rot);
+  DrawObj.Add(new glTObject(GL_QUADS, WPWTex, new TPoint[](
+        new TPoint(HB.p1.X, HB.p1.Y, (C.Z - Z - 1) * RW, 0, 0),
+        new TPoint(HB.p2.X, HB.p2.Y, (C.Z - Z - 1) * RW, 1, 0),
+        new TPoint(HB.p2.X, HB.p2.Y, (C.Z - Z - 0) * RW, 1, 1),
+        new TPoint(HB.p1.X, HB.p1.Y, (C.Z - Z - 0) * RW, 0, 1))));
+  WallHitBox.Add(C.HB - new PointF(X, Y));
+  
 end;
 
 function Segment.CCRarity: real := StССRarity[ClassName].Item1;
@@ -687,7 +730,7 @@ end;
 
 {$region Dangeon}
 
-    {$region SegmentsAt}
+{$region SegmentsAt}
 
 function Dangeon.SegmentsAt(p: Point3i): List<Segment>;
 begin
@@ -704,9 +747,9 @@ function Dangeon.SegmentsAt(X, Y: integer; Z: smallint) := SegmentsAt(new Point3
 
 function Dangeon.SegmentsAt(X, Y: real; Z: smallint) := SegmentsAt(Round(X / RegW), Round(Y / RegW), Z);
 
-    {$endregion}
+{$endregion}
 
-    {$region Schedule}
+{$region Schedule}
 
 procedure Dangeon.DrawMap(X, Y, Z, R: Single);
 begin
@@ -863,9 +906,9 @@ begin
     end;
 end;
 
-    {$endregion}
+{$endregion}
 
-    {$region create/destroy}
+{$region create/destroy}
 
 constructor Dangeon.create(RegW: word; MaxR, VRmlt: real);
 begin
@@ -880,7 +923,7 @@ begin
   WaitRoomsCreationThread := new System.Threading.Thread(WaitRoomsCreation);
   WaitRoomsCreationThread.Start;
 end;
-    //ToDo
+//ToDo
 destructor Dangeon.destroy;
 begin
   Rooms.Clear;//*facepalm*... Можно подумать это сработает
@@ -889,7 +932,40 @@ begin
   WaitRoomsCreationThread.Abort;
 end;
 
-    {$endregion}
+{$endregion}
+
+{$endregion}
+
+{$region Entity}
+
+procedure Entity.Draw;
+begin
+  
+  glPushMatrix;
+  glTranslatef(X, Y, Z);
+  glRotatef(rot / Pi * 180, 0, 0, 1);
+  foreach var glObj in DrawObj.ToArray do
+    glObj.Draw;
+  glPopMatrix;
+  
+end;
+
+procedure Entity.Init(Room: Segment; X, Y, Z: Single;DrawObjMinCount:integer; rot: real);
+begin
+  
+  self.RoomIn := Room;
+  self.DangeonIn := Room.DangeonIn;
+  self.X := X;
+  self.Y := Y;
+  self.Z := Z;
+  self.DrawObj := new List<glObject>(DrawObjMinCount);
+  self.rot := rot;
+  
+end;
+
+{$endregion}
+
+{$region Mob}
 
 {$endregion}
 
