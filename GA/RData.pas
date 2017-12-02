@@ -1202,7 +1202,7 @@ begin
   
   var HallPosOk := Hall.PosOk(C);if HallPosOk then someOk := true;
   var CanalPosOk := Canal.PosOk(C);if CanalPosOk then someOk := true;
-  var TSegPosOk := TSeg.PosOk(C);if TSegPosOk then someOk := true;
+  //var TSegPosOk := TSeg.PosOk(C);if TSegPosOk then someOk := true;
   var TreasuryPosOk := Treasury.PosOk(C);if TreasuryPosOk then someOk := true;
   
   if someOk then
@@ -1212,7 +1212,7 @@ begin
         
         0: if HallPosOk then     if Hall.RarityOk then     Result := new Hall(C);
         1: if CanalPosOk then    if Canal.RarityOk then    Result := new Canal(C);
-        2: if TSegPosOk then     if TSeg.RarityOk then     Result := new TSeg(C);
+        //2: if TSegPosOk then     if TSeg.RarityOk then     Result := new TSeg(C);
         3: if TreasuryPosOk then if Treasury.RarityOk then Result := new Treasury(C);
       
       end;
@@ -1227,7 +1227,7 @@ end;
 begin
   
   Hall.Init;
-  TSeg.Init;
+  //TSeg.Init;
   Treasury.Init;
   StairTube.Init;
   
