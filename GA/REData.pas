@@ -812,17 +812,23 @@ begin
   System.Threading.Thread.CurrentThread.IsBackground := true;
   System.Threading.Thread.CurrentThread.Priority := System.Threading.ThreadPriority.Lowest;
   
+  var LT:=System.DateTime.Now;
+  
   while true do
     try
       var PlayerRoom := nCamera.PlayerRoom;
-          {
-          System.Console.Clear;
-          writeln('Комнат сгенерировано:                ', Rooms.Count);
-          writeln('Комнат ожидает генерации:            ', RoomWait.Count);
-          writeln('Глубина погружения:                  ', PlayerRoom.Z);
-          writeln('Глубина сгенерированого подземелья:  ', Segment.MaxZGen);
-          writeln('Примерная максимальная глубина:      ', MaxR / VRmlt);
-          {}
+      {}
+      if (System.DateTime.Now-LT).TotalMilliseconds > 100 then
+      begin
+        System.Console.Clear;
+        writeln('Комнат сгенерировано:                ', Rooms.Count);
+        writeln('Комнат ожидает генерации:            ', RoomWait.Count);
+        writeln('Глубина погружения:                  ', PlayerRoom.Z);
+        writeln('Глубина сгенерированого подземелья:  ', Segment.MaxZGen);
+        writeln('Примерная максимальная глубина:      ', MaxR / VRmlt);
+        LT:=System.DateTime.Now;
+      end;
+      {}
       if RoomWait.Count = 0 then begin Sleep(100); continue; end;
       var C := RoomWait[0];
       var ForceCreation := false;
